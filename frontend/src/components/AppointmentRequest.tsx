@@ -16,24 +16,29 @@ type AppointmentRequestProps = {
   setForm: Dispatch<SetStateAction<AppointmentForm>>;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 };
-
+// d3d3d3
+// f5f5f5
+// FAFAFA
+// ff6000
 export default function AppointmentRequest({ form, setForm, onSubmit }: AppointmentRequestProps) {
   return (
-    <section className="panel">
-      <h2>Nova solicitação</h2>
-      <form onSubmit={onSubmit} className="form-grid">
-        <label>
-          Applicant name
+    <section className="bg-[#d3d3d3] border border-slate-300 rounded-xl p-4">
+      <h2 className="text-lg font-semibold mb-3 text-slate-900">Nova solicitação</h2>
+      <form onSubmit={onSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <label className="flex flex-col gap-2 text-slate-700">
+            Nome do paciente
           <input
+            className="bg-white border border-slate-300 rounded-md text-slate-900 p-2"
             value={form.applicantName}
             onChange={(event) => setForm((prev) => ({ ...prev, applicantName: event.target.value }))}
             placeholder="Ex.: Maria Silva"
           />
         </label>
 
-        <label>
-          Category
+        <label className="flex flex-col gap-2 text-slate-900">
+          Categoria
           <select
+            className="bg-white border border-slate-300 rounded-md text-slate-900 p-2"
             value={form.category}
             onChange={(event) => setForm((prev) => ({ ...prev, category: event.target.value as Category }))}
           >
@@ -44,9 +49,10 @@ export default function AppointmentRequest({ form, setForm, onSubmit }: Appointm
           </select>
         </label>
 
-        <label>
-          Priority
+        <label className="flex flex-col gap-2 text-slate-900">
+          Prioridade
           <select
+            className="bg-white border border-slate-300 rounded-md text-slate-900 p-2"
             value={form.priority}
             onChange={(event) => setForm((prev) => ({ ...prev, priority: event.target.value as Priority }))}
           >
@@ -57,9 +63,10 @@ export default function AppointmentRequest({ form, setForm, onSubmit }: Appointm
           </select>
         </label>
 
-        <label className="full-width">
-          Description
+        <label className="flex flex-col gap-2 text-slate-900 sm:col-span-2">
+          Descrição
           <textarea
+            className="bg-white border border-slate-300 rounded-md text-slate-900 p-2"
             value={form.description}
             onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
             rows={4}
@@ -67,9 +74,10 @@ export default function AppointmentRequest({ form, setForm, onSubmit }: Appointm
         </label>
 
         {form.priority === 'URGENTE' && (
-          <label className="full-width">
+          <label className="flex flex-col gap-2 text-slate-900 sm:col-span-2">
             Urgent priority justification
             <textarea
+              className="bg-white border border-slate-300 rounded-md text-slate-900 p-2"
               value={form.priorityJustification}
               onChange={(event) => setForm((prev) => ({ ...prev, priorityJustification: event.target.value }))}
               rows={3}
@@ -77,7 +85,7 @@ export default function AppointmentRequest({ form, setForm, onSubmit }: Appointm
           </label>
         )}
 
-        <button type="submit" className="primary-btn">Salvar solicitação</button>
+        <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-4 py-2 mt-2">Salvar solicitação</button>
       </form>
     </section>
   );

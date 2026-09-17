@@ -117,24 +117,24 @@ export default function App() {
   };
 
   return (
-    <div className="app-shell">
-      <header className="topbar">
+    <div className="max-w-6xl mx-auto px-5 py-8">
+      <header className="mb-6">
         <div>
-          <p className="eyebrow">Painel operacional</p>
-          <h1>Solicitações de Atendimento</h1>
+          <p className="text-cyan-400 uppercase text-xs tracking-wider">Painel operacional</p>
+          <h1 className="text-2xl font-semibold">Solicitações de Atendimento</h1>
         </div>
       </header>
 
-      <section className="summary-grid">
+      <section className="grid gap-4 mb-6 grid-rows-1 sm:grid-rows-2 md:grid-rows-3 lg:grid-cols-4">
         {summary.map((item) => (
-          <article key={item.status} className="summary-card">
-            <span>{item.status}</span>
-            <strong>{item.total}</strong>
+          <article key={item.status} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+            <span className="block text-slate-600 mb-2">{item.status}</span>
+            <strong className="text-2xl text-slate-900">{item.total}</strong>
           </article>
         ))}
       </section>
 
-      <main className="content-grid">
+      <main className="grid gap-6 grid-cols-1 lg:grid-cols-2">
         <AppointmentRequest form={form} setForm={setForm} onSubmit={handleSubmit} />
 
         <AppointmentView
