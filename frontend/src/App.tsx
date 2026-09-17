@@ -1,41 +1,43 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import AppointmentRequest from './components/AppointmentRequest';
+import AppointmentView from './components/AppointmentView';
 
 type Status = 'RECEBIDA' | 'EM_ANALISE' | 'AGENDADA' | 'CONCLUIDA' | 'CANCELADA';
-type Prioridade = 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE';
-type Categoria = 'CONSULTA' | 'EXAME' | 'VACINACAO' | 'OUTRO';
+type Priority = 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE';
+type Category = 'CONSULTA' | 'EXAME' | 'VACINACAO' | 'OUTRO';
 
-type Solicitacao = {
+type Appointment = {
   id: number;
-  protocolo: string;
-  nome_solicitante: string;
-  categoria: Categoria;
-  prioridade: Prioridade;
+  protocol: string;
+  applicantName: string;
+  category: Category;
+  priority: Priority;
   status: Status;
-  descricao: string;
-  justificativa_prioridade?: string;
-  data_criacao: string;
-  data_atualizacao: string;
+  description: string;
+  priorityJustification?: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 const API_URL = 'http://localhost:8000/api/v1';
 
 const initialForm = {
-  nome_solicitante: '',
-  categoria: 'CONSULTA' as Categoria,
-  prioridade: 'MEDIA' as Prioridade,
-  descricao: '',
-  justificativa_prioridade: '',
+  applicantName: '',
+  category: 'CONSULTA' as Category,
+  priority: 'MEDIA' as Priority,
+  description: '',
+  priorityJustification: '',
 };
 
 export default function App() {
-  const [solicitacoes, setSolicitacoes] = useState<Solicitacao[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState(initialForm);
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
 
-  const fetchSolicitacoes = async () => {
+  const fetchAppointments = async () => {
     setLoading(true);
     setError(null);
 
@@ -49,7 +51,7 @@ export default function App() {
         throw new Error('Não foi possível carregar as solicitações.');
       }
       const data = await response.json();
-      setSolicitacoes(Array.isArray(data.data) ? data.data : data);
+      setAppointments(Array.isArray(data.data) ? data.data : data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar dados.');
     } finally {
@@ -58,16 +60,16 @@ export default function App() {
   };
 
   useEffect(() => {
-    void fetchSolicitacoes();
+    void fetchAppointments();
   }, [statusFilter, priorityFilter]);
 
-  const resumo = useMemo(() => {
+  const summary = useMemo(() => {
     const map = new Map<Status, number>();
-    for (const item of solicitacoes) {
+    for (const item of appointments) {
       map.set(item.status, (map.get(item.status) ?? 0) + 1);
     }
     return Array.from(map.entries()).map(([status, total]) => ({ status, total }));
-  }, [solicitacoes]);
+  }, [appointments]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -75,7 +77,7 @@ export default function App() {
     try {
       const payload = {
         ...form,
-        justificativa_prioridade: form.prioridade === 'URGENTE' ? form.justificativa_prioridade : undefined,
+        priorityJustification: form.priority === 'URGENTE' ? form.priorityJustification : undefined,
       };
 
       const response = await fetch(`${API_URL}/solicitacoes`, {
@@ -90,13 +92,13 @@ export default function App() {
       }
 
       setForm(initialForm);
-      await fetchSolicitacoes();
+      await fetchAppointments();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao salvar solicitação.');
     }
   };
 
-  const atualizarStatus = async (id: number, status: Status) => {
+  const updateStatus = async (id: number, status: Status) => {
     try {
       const response = await fetch(`${API_URL}/solicitacoes/${id}/status`, {
         method: 'PATCH',
@@ -108,7 +110,7 @@ export default function App() {
         throw new Error('Não foi possível atualizar o status.');
       }
 
-      await fetchSolicitacoes();
+      await fetchAppointments();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao atualizar status.');
     }
@@ -124,7 +126,7 @@ export default function App() {
       </header>
 
       <section className="summary-grid">
-        {resumo.map((item) => (
+        {summary.map((item) => (
           <article key={item.status} className="summary-card">
             <span>{item.status}</span>
             <strong>{item.total}</strong>
@@ -133,119 +135,18 @@ export default function App() {
       </section>
 
       <main className="content-grid">
-        <section className="panel">
-          <h2>Nova solicitação</h2>
-          <form onSubmit={handleSubmit} className="form-grid">
-            <label>
-              Nome do solicitante
-              <input
-                value={form.nome_solicitante}
-                onChange={(event) => setForm({ ...form, nome_solicitante: event.target.value })}
-                placeholder="Ex.: Maria Silva"
-              />
-            </label>
+        <AppointmentRequest form={form} setForm={setForm} onSubmit={handleSubmit} />
 
-            <label>
-              Categoria
-              <select
-                value={form.categoria}
-                onChange={(event) => setForm({ ...form, categoria: event.target.value as Categoria })}
-              >
-                <option value="CONSULTA">CONSULTA</option>
-                <option value="EXAME">EXAME</option>
-                <option value="VACINACAO">VACINACAO</option>
-                <option value="OUTRO">OUTRO</option>
-              </select>
-            </label>
-
-            <label>
-              Prioridade
-              <select
-                value={form.prioridade}
-                onChange={(event) => setForm({ ...form, prioridade: event.target.value as Prioridade })}
-              >
-                <option value="BAIXA">BAIXA</option>
-                <option value="MEDIA">MEDIA</option>
-                <option value="ALTA">ALTA</option>
-                <option value="URGENTE">URGENTE</option>
-              </select>
-            </label>
-
-            <label className="full-width">
-              Descrição
-              <textarea
-                value={form.descricao}
-                onChange={(event) => setForm({ ...form, descricao: event.target.value })}
-                rows={4}
-              />
-            </label>
-
-            {form.prioridade === 'URGENTE' && (
-              <label className="full-width">
-                Justificativa da prioridade urgente
-                <textarea
-                  value={form.justificativa_prioridade}
-                  onChange={(event) => setForm({ ...form, justificativa_prioridade: event.target.value })}
-                  rows={3}
-                />
-              </label>
-            )}
-
-            <button type="submit" className="primary-btn">Salvar solicitação</button>
-          </form>
-        </section>
-
-        <section className="panel">
-          <h2>Solicitações</h2>
-
-          <div className="filters">
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-              <option value="">Todos os status</option>
-              <option value="RECEBIDA">RECEBIDA</option>
-              <option value="EM_ANALISE">EM_ANALISE</option>
-              <option value="AGENDADA">AGENDADA</option>
-              <option value="CONCLUIDA">CONCLUIDA</option>
-              <option value="CANCELADA">CANCELADA</option>
-            </select>
-
-            <select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value)}>
-              <option value="">Todas as prioridades</option>
-              <option value="BAIXA">BAIXA</option>
-              <option value="MEDIA">MEDIA</option>
-              <option value="ALTA">ALTA</option>
-              <option value="URGENTE">URGENTE</option>
-            </select>
-          </div>
-
-          {error && <div className="alert error">{error}</div>}
-
-          {loading ? (
-            <p>Carregando...</p>
-          ) : solicitacoes.length === 0 ? (
-            <p>Nenhuma solicitação encontrada.</p>
-          ) : (
-            <div className="request-list">
-              {solicitacoes.map((item) => (
-                <article key={item.id} className="request-card">
-                  <div className="request-head">
-                    <strong>{item.protocolo}</strong>
-                    <span className="badge">{item.status}</span>
-                  </div>
-
-                  <p>{item.nome_solicitante}</p>
-                  <p>{item.categoria} · {item.prioridade}</p>
-                  <p>{item.descricao}</p>
-
-                  <div className="actions">
-                    <button onClick={() => atualizarStatus(item.id, 'EM_ANALISE')}>Em análise</button>
-                    <button onClick={() => atualizarStatus(item.id, 'AGENDADA')}>Agendar</button>
-                    <button onClick={() => atualizarStatus(item.id, 'CONCLUIDA')}>Concluir</button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
+        <AppointmentView
+          appointments={appointments}
+          loading={loading}
+          error={error}
+          statusFilter={statusFilter}
+          priorityFilter={priorityFilter}
+          onStatusFilterChange={setStatusFilter}
+          onPriorityFilterChange={setPriorityFilter}
+          onUpdateStatus={updateStatus}
+        />
       </main>
     </div>
   );
