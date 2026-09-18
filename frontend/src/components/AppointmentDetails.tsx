@@ -1,5 +1,5 @@
 import type { Appointment, Status } from '../interfaces/Appointment';
-import { nextStatuses, priorityBadgeClasses, statusBadgeClasses, statusLabels } from '../utils/appointmentStatus';
+import { nextStatuses, priorityBadgeClasses, statusActionClasses, statusBadgeClasses, statusLabels } from '../utils/appointmentStatus';
 import Panel from './Panel/Panel';
 
 type AppointmentDetailsProps = {
@@ -99,7 +99,7 @@ export default function AppointmentDetails({
             <button
               key={status}
               type="button"
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-4 py-2 text-sm"
+              className={`rounded-md px-4 py-2 text-sm ${statusActionClasses[status]}`}
               onClick={() => onUpdateStatus(appointment.id, status)}
             >
               {statusLabels[status]}

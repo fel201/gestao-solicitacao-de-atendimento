@@ -60,7 +60,7 @@ export default function AppointmentView({
       />
 
       {!loading && !error && appointments.length > 0 && (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-5">
           {appointments.map((item) => (
             <AppointmentCard key={item.id} appointment={item} onViewDetails={onViewDetails} onUpdateStatus={onUpdateStatus} />
           ))}
