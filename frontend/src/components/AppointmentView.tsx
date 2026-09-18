@@ -85,7 +85,7 @@ export default function AppointmentView({
       {!loading && !error && appointments.length > 0 && (
         <div className="flex flex-col gap-3">
           {appointments.map((item) => (
-            <article key={item.id} className="bg-[#2b323a] border border-[#536170] rounded-lg p-4 shadow-sm">
+            <article key={item.id} className="border border-[#536170] rounded-lg p-4 shadow-sm">
               <div className="flex justify-between items-center mb-2">
                 <strong className="text-slate-100">{item.protocolo}</strong>
                 <span className="inline-flex items-center rounded-full px-3 py-1 text-xs bg-blue-100 border border-blue-200 text-blue-800">{item.status}</span>
