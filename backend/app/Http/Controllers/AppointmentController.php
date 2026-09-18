@@ -16,7 +16,7 @@ class AppointmentController extends Controller
 
     public function index(): JsonResponse
     {
-        $appointments = Appointment::query()->orderByDesc('created_at')->paginate(15);
+        $appointments = Appointment::query()->orderByDesc('data_criacao')->paginate(15);
 
         return response()->json($appointments);
     }
@@ -31,14 +31,19 @@ class AppointmentController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->all();
+
+        error_log('DADOS RECEBIDOS:');
+        error_log(print_r($data, true));
+
         $errors = $this->appointmentService->validateCreation($data);
 
+        // define o campo de status na variável data para RECEBIDO
+        
         if (!empty($errors)) {
             throw ValidationException::withMessages($errors);
         }
-
+        $data['status'] = 'RECEBIDA';
         $appointment = $this->appointmentService->create($data);
-
         return response()->json($appointment, 201);
     }
 

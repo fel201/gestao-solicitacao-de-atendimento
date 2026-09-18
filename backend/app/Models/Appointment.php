@@ -9,22 +9,23 @@ class Appointment extends Model
 {
     use HasFactory;
 
-    protected $table = 'appointments';
+    protected $table = 'atendimentos';
 
     protected $fillable = [
-        'protocol',
-        'applicant_name',
-        'category',
-        'priority',
+        'protocolo',
+        'nome_solicitante',
+        'categoria',
+        'prioridade',
         'status',
-        'description',
-        'priority_justification',
+        'descricao',
+        'justificativa_prioridade',
     ];
 
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'data_criacao' => 'datetime',
+        'data_atualizacao' => 'datetime',
     ];
 
-    public $timestamps = false;
+    public const CREATED_AT = 'data_criacao';
+    public const UPDATED_AT = 'data_atualizacao';
 }

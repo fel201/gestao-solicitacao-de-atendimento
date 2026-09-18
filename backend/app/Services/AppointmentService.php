@@ -36,28 +36,28 @@ class AppointmentService
     {
         $errors = [];
 
-        if (empty($data['applicant_name'] ?? $data['nome_solicitante'] ?? '')) {
-            $errors['applicant_name'] = 'O nome do solicitante é obrigatório.';
+        if (empty($data['nome_solicitante'] ?? '')) {
+            $errors['nome_solicitante'] = 'O nome do solicitante é obrigatório.';
         }
 
-        $category = $data['category'] ?? $data['categoria'] ?? null;
+        $category = $data['categoria'] ?? null;
         if (!in_array($category, self::VALID_CATEGORIES, true)) {
-            $errors['category'] = 'Categoria inválida.';
+            $errors['categoria'] = 'Categoria inválida.';
         }
 
-        $priority = $data['priority'] ?? $data['prioridade'] ?? null;
+        $priority = $data['prioridade'] ?? null;
         if (!in_array($priority, self::VALID_PRIORITIES, true)) {
-            $errors['priority'] = 'Prioridade inválida.';
+            $errors['prioridade'] = 'Prioridade inválida.';
         }
 
-        $description = $data['description'] ?? $data['descricao'] ?? '';
+        $description = $data['descricao'] ?? '';
         if (empty($description)) {
-            $errors['description'] = 'A descrição é obrigatória.';
+            $errors['descricao'] = 'A descrição é obrigatória.';
         }
 
-        $priorityJustification = $data['priority_justification'] ?? $data['justificativa_prioridade'] ?? '';
+        $priorityJustification = $data['justificativa_prioridade'] ?? '';
         if (($priority ?? null) === 'URGENTE' && empty($priorityJustification)) {
-            $errors['priority_justification'] = 'A justificativa da prioridade urgente é obrigatória.';
+            $errors['justificativa_prioridade'] = 'A justificativa da prioridade urgente é obrigatória.';
         }
 
         if (isset($data['status']) && !in_array($data['status'], self::VALID_STATUSES, true)) {
@@ -81,15 +81,13 @@ class AppointmentService
     public function create(array $data): Appointment
     {
         $appointment = new Appointment();
-        $appointment->protocol = $this->generateProtocol();
-        $appointment->applicant_name = $data['applicant_name'] ?? $data['nome_solicitante'];
-        $appointment->category = $data['category'] ?? $data['categoria'];
-        $appointment->priority = $data['priority'] ?? $data['prioridade'];
-        $appointment->status = $data['status'] ?? 'RECEBIDA';
-        $appointment->description = $data['description'] ?? $data['descricao'];
-        $appointment->priority_justification = $data['priority_justification'] ?? $data['justificativa_prioridade'] ?? null;
-        $appointment->created_at = now();
-        $appointment->updated_at = now();
+        $appointment->protocolo = $this->generateProtocol();
+        $appointment->nome_solicitante = $data['nome_solicitante'];
+        $appointment->categoria = $data['categoria'];
+        $appointment->prioridade = $data['prioridade'];
+        $appointment->status = $data['status'];
+        $appointment->descricao = $data['descricao'];
+        $appointment->justificativa_prioridade = $data['justificativa_prioridade'] ?? null;
         $appointment->save();
 
         return $appointment;
@@ -98,7 +96,7 @@ class AppointmentService
     public function updateStatus(Appointment $appointment, string $newStatus): Appointment
     {
         if (in_array($appointment->status, ['CONCLUIDA', 'CANCELADA'], true)) {
-            throw new \RuntimeException('Appointment finalizado não pode ter status alterado.');
+            throw new \RuntimeException('Atendimento finalizado não pode ter status alterado.');
         }
 
         if (!$this->validateTransition($appointment->status, $newStatus)) {
@@ -106,7 +104,6 @@ class AppointmentService
         }
 
         $appointment->status = $newStatus;
-        $appointment->updated_at = now();
         $appointment->save();
 
         return $appointment;
