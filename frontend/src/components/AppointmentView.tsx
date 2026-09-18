@@ -7,8 +7,10 @@ type AppointmentViewProps = {
   loading: boolean;
   error: string | null;
   statusFilter: string;
+  categoryFilter: string;
   priorityFilter: string;
   onStatusFilterChange: (value: string) => void;
+  onCategoryFilterChange: (value: string) => void;
   onPriorityFilterChange: (value: string) => void;
   onRetry: () => void;
   onViewDetails: (appointment: Appointment) => void;
@@ -20,8 +22,10 @@ export default function AppointmentView({
   loading,
   error,
   statusFilter,
+  categoryFilter,
   priorityFilter,
   onStatusFilterChange,
+  onCategoryFilterChange,
   onPriorityFilterChange,
   onRetry,
   onViewDetails,
@@ -47,6 +51,18 @@ export default function AppointmentView({
 
         <select
           className="bg-[#151a20] border border-[#536170] rounded-md text-slate-100 p-2"
+          value={categoryFilter}
+          onChange={(event) => onCategoryFilterChange(event.target.value)}
+        >
+          <option value="">Todas as categorias</option>
+          <option value="CONSULTA">CONSULTA</option>
+          <option value="EXAME">EXAME</option>
+          <option value="VACINACAO">VACINACAO</option>
+          <option value="OUTRO">OUTRO</option>
+        </select>
+
+        <select
+          className="bg-[#151a20] border border-[#536170] rounded-md text-slate-100 p-2"
           value={priorityFilter}
           onChange={(event) => onPriorityFilterChange(event.target.value)}
         >
@@ -62,7 +78,7 @@ export default function AppointmentView({
         loading={loading}
         error={error}
         isEmpty={appointments.length === 0}
-        hasFilters={Boolean(statusFilter || priorityFilter)}
+        hasFilters={Boolean(statusFilter || categoryFilter || priorityFilter)}
         onRetry={onRetry}
       />
 

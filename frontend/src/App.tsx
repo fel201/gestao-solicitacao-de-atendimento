@@ -23,6 +23,7 @@ export default function App() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
 
@@ -33,6 +34,7 @@ export default function App() {
     try {
       const params = new URLSearchParams();
       if (statusFilter) params.set('status', statusFilter);
+      if (categoryFilter) params.set('categoria', categoryFilter);
       if (priorityFilter) params.set('prioridade', priorityFilter);
 
       const response = await fetch(`${API_URL}/appointments?${params.toString()}`);
@@ -50,7 +52,7 @@ export default function App() {
 
   useEffect(() => {
     fetchAppointments();
-  }, [statusFilter, priorityFilter]);
+  }, [statusFilter, categoryFilter, priorityFilter]);
 
   const summary = useMemo(() => {
     const map = new Map<Status, number>();
@@ -142,7 +144,22 @@ export default function App() {
           onUpdateStatus={updateStatus}
         />
       ) : (
-        <main className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+        <main className="grid grid-cols-1 gap-6">
+          <AppointmentView
+            appointments={appointments}
+            loading={loading}
+            error={error}
+            statusFilter={statusFilter}
+            categoryFilter={categoryFilter}
+            priorityFilter={priorityFilter}
+            onStatusFilterChange={setStatusFilter}
+            onCategoryFilterChange={setCategoryFilter}
+            onPriorityFilterChange={setPriorityFilter}
+            onRetry={fetchAppointments}
+            onViewDetails={setSelectedAppointment}
+            onUpdateStatus={updateStatus}
+          />
+
           <AppointmentRequest
             form={form}
             setForm={setForm}
@@ -150,19 +167,6 @@ export default function App() {
             isSubmitting={isSubmitting}
             submitSuccess={submitSuccess}
             submitError={submitError}
-          />
-
-          <AppointmentView
-            appointments={appointments}
-            loading={loading}
-            error={error}
-            statusFilter={statusFilter}
-            priorityFilter={priorityFilter}
-            onStatusFilterChange={setStatusFilter}
-            onPriorityFilterChange={setPriorityFilter}
-            onRetry={fetchAppointments}
-            onViewDetails={setSelectedAppointment}
-            onUpdateStatus={updateStatus}
           />
         </main>
       )}
