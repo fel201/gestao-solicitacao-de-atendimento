@@ -1,1 +1,1 @@
-{"root":["./src/App.tsx","./src/main.tsx","./src/components/AppointmentRequest.tsx","./src/components/AppointmentView.tsx"],"version":"5.9.3"}
+{"root":["./src/app.tsx","./src/main.tsx","./src/components/appointmentdetails.tsx","./src/components/appointmentlistfeedback.tsx","./src/components/appointmentrequest.tsx","./src/components/appointmentview.tsx","./src/interfaces/appointment.ts","./src/utils/appointmentstatus.ts"],"version":"5.9.3"}

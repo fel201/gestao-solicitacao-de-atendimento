@@ -1,19 +1,6 @@
-type Status = 'RECEBIDA' | 'EM_ANALISE' | 'AGENDADA' | 'CONCLUIDA' | 'CANCELADA';
-type Priority = 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE';
-type Category = 'CONSULTA' | 'EXAME' | 'VACINACAO' | 'OUTRO';
-
-type Appointment = {
-  id: number;
-  protocol: string;
-  applicantName: string;
-  category: Category;
-  priority: Priority;
-  status: Status;
-  description: string;
-  priorityJustification?: string;
-  createdAt: string;
-  updatedAt: string;
-};
+import type { Appointment, Status } from '../interfaces/Appointment';
+import { nextStatuses, statusLabels } from '../utils/appointmentStatus';
+import AppointmentListFeedback from './AppointmentListFeedback';
 
 type AppointmentViewProps = {
   appointments: Appointment[];
@@ -23,6 +10,8 @@ type AppointmentViewProps = {
   priorityFilter: string;
   onStatusFilterChange: (value: string) => void;
   onPriorityFilterChange: (value: string) => void;
+  onRetry: () => void;
+  onViewDetails: (appointment: Appointment) => void;
   onUpdateStatus: (id: number, status: Status) => void;
 };
 
@@ -34,15 +23,17 @@ export default function AppointmentView({
   priorityFilter,
   onStatusFilterChange,
   onPriorityFilterChange,
+  onRetry,
+  onViewDetails,
   onUpdateStatus,
 }: AppointmentViewProps) {
   return (
-    <section className="bg-[#d3d3d3] border border-slate-300 rounded-xl p-4">
-      <h2 className="text-lg font-semibold mb-3 text-slate-900">Solicitações</h2>
+    <section className="bg-[#2D2D2D] border border-[#3f4b59] rounded-xl p-4">
+      <h2 className="text-lg font-semibold mb-3 text-slate-100">Solicitações</h2>
 
       <div className="flex gap-3 mb-4">
         <select
-          className="bg-white border border-slate-300 rounded-md text-slate-900 p-3"
+          className="bg-[#151a20] border border-[#536170] rounded-md text-slate-100 p-3"
           value={statusFilter}
           onChange={(event) => onStatusFilterChange(event.target.value)}
         >
@@ -55,7 +46,7 @@ export default function AppointmentView({
         </select>
 
         <select
-          className="bg-white border border-slate-300 rounded-md text-slate-900 p-2"
+          className="bg-[#151a20] border border-[#536170] rounded-md text-slate-100 p-2"
           value={priorityFilter}
           onChange={(event) => onPriorityFilterChange(event.target.value)}
         >
@@ -67,30 +58,47 @@ export default function AppointmentView({
         </select>
       </div>
 
-      {error && <div className="rounded-md p-3 mb-3 bg-red-50 text-red-800 border border-red-200">{error}</div>}
+      <AppointmentListFeedback
+        loading={loading}
+        error={error}
+        isEmpty={appointments.length === 0}
+        hasFilters={Boolean(statusFilter || priorityFilter)}
+        onRetry={onRetry}
+      />
 
-      {loading ? (
-        <p>Carregando...</p>
-      ) : appointments.length === 0 ? (
-        <p>Nenhuma solicitação encontrada.</p>
-      ) : (
+      {!loading && !error && appointments.length > 0 && (
         <div className="flex flex-col gap-3">
           {appointments.map((item) => (
-            <article key={item.id} className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+            <article key={item.id} className="bg-[#2b323a] border border-[#536170] rounded-lg p-4 shadow-sm">
               <div className="flex justify-between items-center mb-2">
-                <strong className="text-slate-900">{item.protocol}</strong>
+                <strong className="text-slate-100">{item.protocolo}</strong>
                 <span className="inline-flex items-center rounded-full px-3 py-1 text-xs bg-blue-100 border border-blue-200 text-blue-800">{item.status}</span>
               </div>
 
-              <p className="text-slate-800">{item.applicantName}</p>
-              <p className="text-slate-600">{item.category} · {item.priority}</p>
-              <p className="mt-2 text-slate-700">{item.description}</p>
+              <p className="text-slate-200">{item.nome_solicitante}</p>
+              <p className="text-slate-400">{item.categoria} · {item.prioridade}</p>
 
-              <div className="flex gap-2 mt-3 flex-wrap">
-                <button className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-3 py-1 text-sm" onClick={() => onUpdateStatus(item.id, 'EM_ANALISE')}>Em análise</button>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-3 py-1 text-sm" onClick={() => onUpdateStatus(item.id, 'AGENDADA')}>Agendar</button>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-3 py-1 text-sm" onClick={() => onUpdateStatus(item.id, 'CONCLUIDA')}>Concluir</button>
-              </div>
+              <button
+                type="button"
+                className="mt-3 text-cyan-300 hover:text-cyan-200 font-medium text-sm underline"
+                onClick={() => onViewDetails(item)}
+              >
+                Ver detalhes
+              </button>
+
+              {nextStatuses[item.status].length > 0 && (
+                <div className="flex gap-2 mt-3 flex-wrap">
+                  {nextStatuses[item.status].map((nextStatus) => (
+                    <button
+                      key={nextStatus}
+                      className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-3 py-1 text-sm"
+                      onClick={() => onUpdateStatus(item.id, nextStatus)}
+                    >
+                      {statusLabels[nextStatus]}
+                    </button>
+                  ))}
+                </div>
+              )}
             </article>
           ))}
         </div>
