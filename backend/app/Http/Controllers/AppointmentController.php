@@ -14,9 +14,17 @@ class AppointmentController extends Controller
         private readonly AppointmentService $appointmentService
     ) {}
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $appointments = Appointment::query()->orderByDesc('data_criacao')->paginate(15);
+        $query = Appointment::query();
+
+        foreach (['status', 'categoria', 'prioridade'] as $filter) {
+            if ($request->filled($filter)) {
+                $query->where($filter, $request->input($filter));
+            }
+        }
+
+        $appointments = $query->orderByDesc('data_criacao')->paginate(15);
 
         return response()->json($appointments);
     }
