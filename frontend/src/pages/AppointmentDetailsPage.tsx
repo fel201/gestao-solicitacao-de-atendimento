@@ -19,7 +19,7 @@ export default function AppointmentDetailsPage({
 
   if (!appointment) {
     return (
-      <section className="rounded-xl border border-[#3f4b59] bg-[#2D2D2D] p-5 text-slate-200">
+      <section className="rounded-xl border border-[#3f4b59] bg-[#161616] p-5 text-slate-200">
         Solicitação não encontrada.
       </section>
     );

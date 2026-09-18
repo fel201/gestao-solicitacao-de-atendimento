@@ -1,6 +1,7 @@
 import type { Dispatch, FormEvent, SetStateAction } from 'react';
 import { useState } from 'react';
 import type { AppointmentForm } from '../interfaces/Appointment';
+import Panel from './Panel/Panel';
 
 type Category = 'CONSULTA' | 'EXAME' | 'VACINACAO' | 'OUTRO';
 type Priority = 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE';
@@ -31,7 +32,7 @@ function validate(form: AppointmentForm): FormErrors {
   return errors;
 }
 
-const inputClass = 'bg-[#151a20] border rounded-md text-slate-100 placeholder:text-slate-500 p-2';
+const inputClass = 'bg-[#262626] border rounded-md text-slate-100 placeholder:text-slate-500 p-2';
 
 function fieldClass(hasError?: string) {
   return `${inputClass} ${hasError ? 'border-red-400' : 'border-[#536170]'}`;
@@ -66,7 +67,7 @@ export default function AppointmentRequest({
   }
 
   return (
-    <section className="bg-[#2D2D2D] border border-[#3f4b59] rounded-xl p-4">
+    <Panel className="bg-[#161616]">
       <h2 className="text-lg font-semibold mb-3 text-slate-100">Nova solicitação</h2>
 
       {submitSuccess && (
@@ -175,6 +176,6 @@ export default function AppointmentRequest({
           {isSubmitting ? 'Enviando solicitação...' : 'Salvar solicitação'}
         </button>
       </form>
-    </section>
+    </Panel>
   );
 }

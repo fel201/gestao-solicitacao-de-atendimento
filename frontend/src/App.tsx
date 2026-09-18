@@ -52,6 +52,9 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
+  const [appliedStatusFilter, setAppliedStatusFilter] = useState('');
+  const [appliedCategoryFilter, setAppliedCategoryFilter] = useState('');
+  const [appliedPriorityFilter, setAppliedPriorityFilter] = useState('');
 
   const fetchAppointments = async () => {
     setLoading(true);
@@ -59,9 +62,9 @@ export default function App() {
 
     try {
       const params = new URLSearchParams();
-      if (statusFilter) params.set('status', statusFilter);
-      if (categoryFilter) params.set('categoria', categoryFilter);
-      if (priorityFilter) params.set('prioridade', priorityFilter);
+      if (appliedStatusFilter) params.set('status', appliedStatusFilter);
+      if (appliedCategoryFilter) params.set('categoria', appliedCategoryFilter);
+      if (appliedPriorityFilter) params.set('prioridade', appliedPriorityFilter);
 
       const response = await fetch(`${API_URL}/appointments?${params.toString()}`);
       if (!response.ok) throw new Error('Não foi possível carregar as solicitações.');
@@ -77,7 +80,13 @@ export default function App() {
 
   useEffect(() => {
     fetchAppointments();
-  }, [statusFilter, categoryFilter, priorityFilter]);
+  }, [appliedStatusFilter, appliedCategoryFilter, appliedPriorityFilter]);
+
+  const applyFilters = () => {
+    setAppliedStatusFilter(statusFilter);
+    setAppliedCategoryFilter(categoryFilter);
+    setAppliedPriorityFilter(priorityFilter);
+  };
 
   const summary = useMemo(() => {
     const map = new Map<Status, number>();
@@ -135,7 +144,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#14181d] text-slate-100 lg:flex">
+    <div className="min-h-screen bg-[#0f0f0f] text-slate-100 lg:flex">
       <NavigationSidebar />
       <main className="min-w-0 flex-1 px-5 py-8 lg:px-10">
         <div className="mx-auto max-w-6xl">
@@ -159,6 +168,8 @@ export default function App() {
                   onStatusFilterChange={setStatusFilter}
                   onCategoryFilterChange={setCategoryFilter}
                   onPriorityFilterChange={setPriorityFilter}
+                  onApplyFilters={applyFilters}
+                  hasAppliedFilters={Boolean(appliedStatusFilter || appliedCategoryFilter || appliedPriorityFilter)}
                   onRetry={fetchAppointments}
                   onViewDetails={(appointment) => navigate(`/solicitacoes/${appointment.id}`)}
                   onUpdateStatus={updateStatus}

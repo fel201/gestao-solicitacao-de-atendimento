@@ -1,5 +1,6 @@
 import type { Appointment, Status } from '../interfaces/Appointment';
-import { nextStatuses, statusLabels } from '../utils/appointmentStatus';
+import { nextStatuses, priorityBadgeClasses, statusBadgeClasses, statusLabels } from '../utils/appointmentStatus';
+import Panel from './Panel/Panel';
 
 type AppointmentDetailsProps = {
   appointment: Appointment;
@@ -26,7 +27,7 @@ export default function AppointmentDetails({
   const allowedStatuses = nextStatuses[appointment.status];
 
   return (
-    <section className="bg-[#20252b] border border-[#3f4b59] rounded-xl p-5">
+    <Panel className="p-5">
       {error && (
         <div className="mb-5 rounded-md border border-red-200 bg-red-50 p-4 text-red-800" role="alert">
           <p className="font-medium">Não foi possível concluir a operação.</p>
@@ -54,7 +55,7 @@ export default function AppointmentDetails({
           <p className="text-sm uppercase tracking-wide text-slate-400">Detalhes da solicitação</p>
           <h2 className="text-2xl font-semibold text-slate-100">{appointment.protocolo}</h2>
         </div>
-        <span className="inline-flex w-fit items-center rounded-full px-3 py-1 text-sm bg-blue-100 border border-blue-200 text-blue-800">
+        <span className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-sm ${statusBadgeClasses[appointment.status]}`}>
           {appointment.status}
         </span>
       </div>
@@ -70,7 +71,7 @@ export default function AppointmentDetails({
         </div>
         <div>
           <dt className="text-sm text-slate-400">Prioridade</dt>
-          <dd className="font-medium text-slate-100">{appointment.prioridade}</dd>
+          <dd className={`font-medium ${priorityBadgeClasses[appointment.prioridade]}`}>{appointment.prioridade}</dd>
         </div>
         <div>
           <dt className="text-sm text-slate-400">Criada em</dt>
@@ -106,6 +107,6 @@ export default function AppointmentDetails({
           ))}
         </div>
       )}
-    </section>
+    </Panel>
   );
 }
