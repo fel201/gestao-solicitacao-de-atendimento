@@ -7,7 +7,7 @@ const navigationItems = [
 
 export default function NavigationSidebar() {
   return (
-    <aside className="border-b border-[#3f4b59] bg-[#20252b] lg:min-h-screen lg:w-64 lg:border-b-0 lg:border-r">
+    <aside className="border-b border-[#3f4b59] bg-[#0f0f0f] lg:min-h-screen lg:w-64 lg:border-b-0 lg:border-r">
       <div className="p-5">
         <p className="text-xs uppercase tracking-wider text-cyan-300"></p>
         <h1 className="mt-1 text-xl font-semibold text-slate-100">Solicitações de Atendimentos</h1>

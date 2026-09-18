@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import type { Appointment, Status } from '../../interfaces/Appointment';
 import { categoryBadgeClasses, nextStatuses, priorityBadgeClasses, priorityBorderClasses, statusActionClasses, statusBadgeClasses, statusLabels } from '../../utils/appointmentStatus';
+import ConfirmDialog from '../ConfirmDialog/ConfirmDialog';
 
 type AppointmentCardProps = {
   appointment: Appointment;
@@ -9,6 +11,21 @@ type AppointmentCardProps = {
 
 export default function AppointmentCard({ appointment, onViewDetails, onUpdateStatus }: AppointmentCardProps) {
   const allowedStatuses = nextStatuses[appointment.status];
+  const [pendingStatus, setPendingStatus] = useState<Status | null>(null);
+
+  function requestStatusChange(status: Status) {
+    if (status === 'EM_ANALISE' || status === 'CANCELADA') {
+      setPendingStatus(status);
+      return;
+    }
+
+    onUpdateStatus(appointment.id, status);
+  }
+
+  function confirmStatusChange() {
+    if (pendingStatus) onUpdateStatus(appointment.id, pendingStatus);
+    setPendingStatus(null);
+  }
 
   return (
     <article className={`rounded-lg border border-[#536170] border-l-4 p-5 shadow-sm ${priorityBorderClasses[appointment.prioridade]}`}>
@@ -32,18 +49,27 @@ export default function AppointmentCard({ appointment, onViewDetails, onUpdateSt
 
       <div className="mt-4 border-t border-[#536170] pt-4">
         <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">Ações</p>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <button type="button" className="text-sm font-medium text-cyan-300 underline hover:text-cyan-200" onClick={() => onViewDetails(appointment)}>
             Ver detalhes
           </button>
 
           {allowedStatuses.map((status) => (
-            <button key={status} type="button" className={`rounded-md px-3 py-1 text-sm ${statusActionClasses[status]}`} onClick={() => onUpdateStatus(appointment.id, status)}>
+            <button key={status} type="button" className={`rounded-md px-3 py-1 text-sm ${statusActionClasses[status]}`} onClick={() => requestStatusChange(status)}>
               {statusLabels[status]}
             </button>
           ))}
         </div>
       </div>
+      <ConfirmDialog
+        open={pendingStatus !== null}
+        title={pendingStatus === 'CANCELADA' ? 'Cancelar solicitação?' : 'Enviar para análise?'}
+        description={pendingStatus === 'CANCELADA' ? 'Essa ação encerra a solicitação e não poderá ser desfeita.' : 'Confirme que deseja alterar o status desta solicitação para Em análise.'}
+        confirmLabel={pendingStatus === 'CANCELADA' ? 'Cancelar solicitação' : 'Confirmar análise'}
+        destructive={pendingStatus === 'CANCELADA'}
+        onConfirm={confirmStatusChange}
+        onCancel={() => setPendingStatus(null)}
+      />
     </article>
   );
 }

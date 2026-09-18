@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import type { Appointment, Status } from '../interfaces/Appointment';
 import { nextStatuses, priorityBadgeClasses, statusActionClasses, statusBadgeClasses, statusLabels } from '../utils/appointmentStatus';
+import ConfirmDialog from './ConfirmDialog/ConfirmDialog';
 import Panel from './Panel/Panel';
 
 type AppointmentDetailsProps = {
@@ -25,6 +27,21 @@ export default function AppointmentDetails({
   onUpdateStatus,
 }: AppointmentDetailsProps) {
   const allowedStatuses = nextStatuses[appointment.status];
+  const [pendingStatus, setPendingStatus] = useState<Status | null>(null);
+
+  function requestStatusChange(status: Status) {
+    if (status === 'EM_ANALISE' || status === 'CANCELADA') {
+      setPendingStatus(status);
+      return;
+    }
+
+    onUpdateStatus(appointment.id, status);
+  }
+
+  function confirmStatusChange() {
+    if (pendingStatus) onUpdateStatus(appointment.id, pendingStatus);
+    setPendingStatus(null);
+  }
 
   return (
     <Panel className="p-5">
@@ -94,19 +111,28 @@ export default function AppointmentDetails({
       </dl>
 
       {allowedStatuses.length > 0 && (
-        <div className="flex gap-2 mt-7 flex-wrap">
+        <div className="mt-7 flex flex-wrap justify-end gap-2">
           {allowedStatuses.map((status) => (
             <button
               key={status}
               type="button"
               className={`rounded-md px-4 py-2 text-sm ${statusActionClasses[status]}`}
-              onClick={() => onUpdateStatus(appointment.id, status)}
+              onClick={() => requestStatusChange(status)}
             >
               {statusLabels[status]}
             </button>
           ))}
         </div>
       )}
+      <ConfirmDialog
+        open={pendingStatus !== null}
+        title={pendingStatus === 'CANCELADA' ? 'Cancelar solicitação?' : 'Enviar para análise?'}
+        description={pendingStatus === 'CANCELADA' ? 'Essa ação encerra a solicitação e não poderá ser desfeita.' : 'Confirme que deseja alterar o status desta solicitação para Em análise.'}
+        confirmLabel={pendingStatus === 'CANCELADA' ? 'Cancelar solicitação' : 'Confirmar análise'}
+        destructive={pendingStatus === 'CANCELADA'}
+        onConfirm={confirmStatusChange}
+        onCancel={() => setPendingStatus(null)}
+      />
     </Panel>
   );
 }
