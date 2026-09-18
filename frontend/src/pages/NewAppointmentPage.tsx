@@ -1,6 +1,6 @@
-import type { Dispatch, FormEvent, SetStateAction } from 'react';
-import AppointmentRequest from '../components/AppointmentRequest';
-import type { AppointmentForm } from '../interfaces/Appointment';
+import type { Dispatch, FormEvent, SetStateAction } from "react";
+import AppointmentRequest from "../components/AppointmentRequest";
+import type { AppointmentForm } from "../interfaces/Appointment";
 
 type NewAppointmentPageProps = {
   form: AppointmentForm;

@@ -1,6 +1,11 @@
-export type Status = 'RECEBIDA' | 'EM_ANALISE' | 'AGENDADA' | 'CONCLUIDA' | 'CANCELADA';
-export type Priority = 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE';
-export type Category = 'CONSULTA' | 'EXAME' | 'VACINACAO' | 'OUTRO';
+export type Status =
+  | "RECEBIDA"
+  | "EM_ANALISE"
+  | "AGENDADA"
+  | "CONCLUIDA"
+  | "CANCELADA";
+export type Priority = "BAIXA" | "MEDIA" | "ALTA" | "URGENTE";
+export type Category = "CONSULTA" | "EXAME" | "VACINACAO" | "OUTRO";
 
 export type Appointment = {
   id: number;

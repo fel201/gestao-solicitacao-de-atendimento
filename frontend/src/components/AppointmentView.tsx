@@ -1,8 +1,8 @@
-import type { Appointment, Status } from '../interfaces/Appointment';
-import AppointmentCard from './AppointmentCard/AppointmentCard';
-import AppointmentFilters from './AppointmentFilters/AppointmentFilters';
-import AppointmentListFeedback from './AppointmentListFeedback/AppointmentListFeedback';
-import Panel from './Panel/Panel';
+import type { Appointment, Status } from "../interfaces/Appointment";
+import AppointmentCard from "./AppointmentCard/AppointmentCard";
+import AppointmentFilters from "./AppointmentFilters/AppointmentFilters";
+import AppointmentListFeedback from "./AppointmentListFeedback/AppointmentListFeedback";
+import Panel from "./Panel/Panel";
 
 type AppointmentViewProps = {
   appointments: Appointment[];
@@ -39,7 +39,9 @@ export default function AppointmentView({
 }: AppointmentViewProps) {
   return (
     <Panel>
-      <h2 className="text-lg font-semibold mb-3 text-slate-100">Solicitações</h2>
+      <h2 className="text-lg font-semibold mb-3 text-slate-100">
+        Solicitações
+      </h2>
 
       <AppointmentFilters
         status={statusFilter}
@@ -62,7 +64,12 @@ export default function AppointmentView({
       {!loading && !error && appointments.length > 0 && (
         <div className="flex flex-col gap-5">
           {appointments.map((item) => (
-            <AppointmentCard key={item.id} appointment={item} onViewDetails={onViewDetails} onUpdateStatus={onUpdateStatus} />
+            <AppointmentCard
+              key={item.id}
+              appointment={item}
+              onViewDetails={onViewDetails}
+              onUpdateStatus={onUpdateStatus}
+            />
           ))}
         </div>
       )}

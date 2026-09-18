@@ -1,6 +1,6 @@
-import AppointmentView from '../components/AppointmentView';
-import StatusSummary from '../components/StatusSummary/StatusSummary';
-import type { Appointment, Status } from '../interfaces/Appointment';
+import AppointmentView from "../components/AppointmentView";
+import StatusSummary from "../components/StatusSummary/StatusSummary";
+import type { Appointment, Status } from "../interfaces/Appointment";
 
 type AppointmentListPageProps = {
   appointments: Appointment[];

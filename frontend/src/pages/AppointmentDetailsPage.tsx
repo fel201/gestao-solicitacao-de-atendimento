@@ -1,6 +1,6 @@
-import { useNavigate } from 'react-router';
-import AppointmentDetails from '../components/AppointmentDetails';
-import type { Appointment, Status } from '../interfaces/Appointment';
+import { useNavigate } from "react-router";
+import AppointmentDetails from "../components/AppointmentDetails";
+import type { Appointment, Status } from "../interfaces/Appointment";
 
 type AppointmentDetailsPageProps = {
   appointment: Appointment | undefined;
@@ -29,7 +29,7 @@ export default function AppointmentDetailsPage({
     <AppointmentDetails
       appointment={appointment}
       error={error}
-      onBack={() => navigate('/solicitacoes')}
+      onBack={() => navigate("/solicitacoes")}
       onRetry={onRetry}
       onUpdateStatus={onUpdateStatus}
     />
