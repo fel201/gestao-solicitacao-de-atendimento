@@ -20,6 +20,32 @@ export type Appointment = {
   data_atualizacao: string;
 };
 
+export type AppointmentListItem = Pick<
+  Appointment,
+  | "id"
+  | "protocolo"
+  | "nome_solicitante"
+  | "categoria"
+  | "prioridade"
+  | "status"
+  | "descricao"
+>;
+
+export type AppointmentFilters = {
+  status?: string;
+  categoria?: string;
+  prioridade?: string;
+  page?: number;
+};
+
+export type PaginatedResponse<T> = {
+  data: T[];
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+};
+
 export type AppointmentForm = {
   nome_solicitante: string;
   categoria: Category;

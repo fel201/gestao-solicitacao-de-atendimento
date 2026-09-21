@@ -1,7 +1,8 @@
 import type { Dispatch, FormEvent, SetStateAction } from "react";
 import { useState } from "react";
+import FormField from "../components/ui/FormField";
 import type { AppointmentForm } from "../interfaces/Appointment";
-import Panel from "./Panel/Panel";
+import Panel from "../components/ui/Panel";
 
 type Category = "CONSULTA" | "EXAME" | "VACINACAO" | "OUTRO";
 type Priority = "BAIXA" | "MEDIA" | "ALTA" | "URGENTE";
@@ -101,8 +102,7 @@ export default function AppointmentRequest({
         aria-busy={isSubmitting}
         className="grid grid-cols-1 sm:grid-cols-2 gap-4"
       >
-        <label className="flex flex-col gap-2 text-slate-200">
-          Nome do paciente *
+        <FormField label="Nome do paciente *" error={errors.nome_solicitante}>
           <input
             className={fieldClass(errors.nome_solicitante)}
             value={form.nome_solicitante}
@@ -111,15 +111,9 @@ export default function AppointmentRequest({
             placeholder="Ex.: Maria Silva"
             aria-invalid={Boolean(errors.nome_solicitante)}
           />
-          {errors.nome_solicitante && (
-            <span className="text-sm text-red-700">
-              {errors.nome_solicitante}
-            </span>
-          )}
-        </label>
+        </FormField>
 
-        <label className="flex flex-col gap-2 text-slate-200">
-          Categoria *
+        <FormField label="Categoria *" error={errors.categoria}>
           <select
             className={fieldClass(errors.categoria)}
             value={form.categoria}
@@ -134,13 +128,9 @@ export default function AppointmentRequest({
             <option value="VACINACAO">VACINACAO</option>
             <option value="OUTRO">OUTRO</option>
           </select>
-          {errors.categoria && (
-            <span className="text-sm text-red-700">{errors.categoria}</span>
-          )}
-        </label>
+        </FormField>
 
-        <label className="flex flex-col gap-2 text-slate-200">
-          Prioridade *
+        <FormField label="Prioridade *" error={errors.prioridade}>
           <select
             className={fieldClass(errors.prioridade)}
             value={form.prioridade}
@@ -155,13 +145,13 @@ export default function AppointmentRequest({
             <option value="ALTA">ALTA</option>
             <option value="URGENTE">URGENTE</option>
           </select>
-          {errors.prioridade && (
-            <span className="text-sm text-red-700">{errors.prioridade}</span>
-          )}
-        </label>
+        </FormField>
 
-        <label className="flex flex-col gap-2 text-slate-200 sm:col-span-2">
-          Descrição *
+        <FormField
+          label="Descrição *"
+          error={errors.descricao}
+          className="sm:col-span-2"
+        >
           <textarea
             className={fieldClass(errors.descricao)}
             value={form.descricao}
@@ -170,13 +160,14 @@ export default function AppointmentRequest({
             rows={4}
             aria-invalid={Boolean(errors.descricao)}
           />
-          {errors.descricao && (
-            <span className="text-sm text-red-700">{errors.descricao}</span>
-          )}
-        </label>
+        </FormField>
 
-        <label className="flex flex-col gap-2 text-slate-200 sm:col-span-2">
-          Justificativa de prioridade {isUrgente && "*"}
+        <FormField
+          label={`Justificativa de prioridade${isUrgente ? " *" : ""}`}
+          error={errors.justificativa_prioridade}
+          hint={isUrgente ? "Prioridade URGENTE exige justificativa." : undefined}
+          className="sm:col-span-2"
+        >
           <textarea
             className={fieldClass(errors.justificativa_prioridade)}
             value={form.justificativa_prioridade}
@@ -187,17 +178,7 @@ export default function AppointmentRequest({
             rows={3}
             aria-invalid={Boolean(errors.justificativa_prioridade)}
           />
-          {isUrgente && !errors.justificativa_prioridade && (
-            <span className="text-sm text-slate-400">
-              Prioridade URGENTE exige justificativa.
-            </span>
-          )}
-          {errors.justificativa_prioridade && (
-            <span className="text-sm text-red-700">
-              {errors.justificativa_prioridade}
-            </span>
-          )}
-        </label>
+        </FormField>
 
         <button
           type="submit"

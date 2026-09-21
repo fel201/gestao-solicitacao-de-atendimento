@@ -1,18 +1,21 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { Navigate, Route, Routes, useNavigate, useParams } from "react-router";
-import NavigationSidebar from "./components/NavigationSidebar";
+import NavigationSidebar from "./components/layout/NavigationSidebar";
 import type {
-  Appointment,
   AppointmentForm,
+  AppointmentListItem,
   Category,
   Priority,
   Status,
 } from "./interfaces/Appointment";
-import AppointmentDetailsPage from "./pages/AppointmentDetailsPage";
-import AppointmentListPage from "./pages/AppointmentListPage";
-import NewAppointmentPage from "./pages/NewAppointmentPage";
-
-const API_URL = "http://localhost:8000/api/v1";
+import AppointmentDetails from "./pages/AppointmentDetails";
+import AppointmentRequest from "./pages/AppointmentRequest";
+import AppointmentView from "./pages/AppointmentView";
+import {
+  createAppointment,
+  listAppointments,
+  updateAppointmentStatus,
+} from "./services/appointments";
 
 const initialForm: AppointmentForm = {
   nome_solicitante: "",
@@ -22,25 +25,25 @@ const initialForm: AppointmentForm = {
   justificativa_prioridade: "",
 };
 
-function DetailsRoute({
-  appointments,
-  error,
-  onRetry,
-  onUpdateStatus,
-}: {
-  appointments: Appointment[];
-  error: string | null;
-  onRetry: () => void;
-  onUpdateStatus: (id: number, status: Status) => void;
+function DetailsRoute({ onUpdateStatus }: {
+  onUpdateStatus: (id: number, status: Status) => Promise<void>;
 }) {
   const { id } = useParams();
-  const appointment = appointments.find((item) => item.id === Number(id));
+  const navigate = useNavigate();
+  const appointmentId = Number(id);
+
+  if (!Number.isInteger(appointmentId) || appointmentId < 1) {
+    return (
+      <section className="rounded-xl border border-[#3f4b59] bg-[#161616] p-5 text-slate-200">
+        Solicitação não encontrada.
+      </section>
+    );
+  }
 
   return (
-    <AppointmentDetailsPage
-      appointment={appointment}
-      error={error}
-      onRetry={onRetry}
+    <AppointmentDetails
+      appointmentId={appointmentId}
+      onBack={() => navigate("/solicitacoes")}
       onUpdateStatus={onUpdateStatus}
     />
   );
@@ -48,7 +51,10 @@ function DetailsRoute({
 
 export default function App() {
   const navigate = useNavigate();
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [appointments, setAppointments] = useState<AppointmentListItem[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<AppointmentForm>(initialForm);
@@ -62,27 +68,21 @@ export default function App() {
   const [appliedCategoryFilter, setAppliedCategoryFilter] = useState("");
   const [appliedPriorityFilter, setAppliedPriorityFilter] = useState("");
 
-  const fetchAppointments = async () => {
+  const fetchAppointments = async (page = currentPage) => {
     setLoading(true);
     setError(null);
 
     try {
-      const params = new URLSearchParams();
-      if (appliedStatusFilter) params.set("status", appliedStatusFilter);
-      if (appliedCategoryFilter) params.set("categoria", appliedCategoryFilter);
-      if (appliedPriorityFilter)
-        params.set("prioridade", appliedPriorityFilter);
-
-      const response = await fetch(
-        `${API_URL}/appointments?${params.toString()}`,
-      );
-      if (!response.ok)
-        throw new Error("Não foi possível carregar as solicitações.");
-
-      const data = await response.json();
-      setAppointments(
-        Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : [],
-      );
+      const data = await listAppointments({
+        status: appliedStatusFilter,
+        categoria: appliedCategoryFilter,
+        prioridade: appliedPriorityFilter,
+        page,
+      });
+      setAppointments(data.data);
+      setCurrentPage(data.current_page);
+      setLastPage(data.last_page);
+      setTotal(data.total);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao carregar dados.");
     } finally {
@@ -92,12 +92,18 @@ export default function App() {
 
   useEffect(() => {
     fetchAppointments();
-  }, [appliedStatusFilter, appliedCategoryFilter, appliedPriorityFilter]);
+  }, [
+    appliedStatusFilter,
+    appliedCategoryFilter,
+    appliedPriorityFilter,
+    currentPage,
+  ]);
 
   const applyFilters = () => {
     setAppliedStatusFilter(statusFilter);
     setAppliedCategoryFilter(categoryFilter);
     setAppliedPriorityFilter(priorityFilter);
+    setCurrentPage(1);
   };
 
   const summary = useMemo(() => {
@@ -118,26 +124,11 @@ export default function App() {
     setSubmitError(null);
 
     try {
-      const payload = {
-        ...form,
-        justificativa_prioridade:
-          form.prioridade === "URGENTE"
-            ? form.justificativa_prioridade
-            : undefined,
-      };
-      const response = await fetch(`${API_URL}/appointments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message ?? "Erro ao criar solicitação.");
-      }
+      await createAppointment(form);
 
       setForm(initialForm);
       setSubmitSuccess(true);
-      await fetchAppointments();
+      await fetchAppointments(1);
     } catch (err) {
       setSubmitError(
         err instanceof Error ? err.message : "Erro ao salvar solicitação.",
@@ -149,18 +140,13 @@ export default function App() {
 
   const updateStatus = async (id: number, status: Status) => {
     try {
-      const response = await fetch(`${API_URL}/appointments/${id}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-      if (!response.ok) throw new Error("Não foi possível atualizar o status.");
-
+      await updateAppointmentStatus(id, status);
       await fetchAppointments();
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Erro ao atualizar status.",
       );
+      throw err;
     }
   };
 
@@ -182,7 +168,7 @@ export default function App() {
             <Route
               path="/solicitacoes"
               element={
-                <AppointmentListPage
+                <AppointmentView
                   appointments={appointments}
                   summary={summary}
                   loading={loading}
@@ -200,6 +186,10 @@ export default function App() {
                     appliedPriorityFilter,
                   )}
                   onRetry={fetchAppointments}
+                  currentPage={currentPage}
+                  lastPage={lastPage}
+                  total={total}
+                  onPageChange={setCurrentPage}
                   onViewDetails={(appointment) =>
                     navigate(`/solicitacoes/${appointment.id}`)
                   }
@@ -210,7 +200,7 @@ export default function App() {
             <Route
               path="/solicitacoes/nova"
               element={
-                <NewAppointmentPage
+                <AppointmentRequest
                   form={form}
                   setForm={setForm}
                   onSubmit={handleSubmit}
@@ -224,9 +214,6 @@ export default function App() {
               path="/solicitacoes/:id"
               element={
                 <DetailsRoute
-                  appointments={appointments}
-                  error={error}
-                  onRetry={fetchAppointments}
                   onUpdateStatus={updateStatus}
                 />
               }

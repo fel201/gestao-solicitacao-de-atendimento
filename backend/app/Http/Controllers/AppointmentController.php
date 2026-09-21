@@ -24,7 +24,18 @@ class AppointmentController extends Controller
             }
         }
 
-        $appointments = $query->orderByDesc('data_criacao')->paginate(15);
+        $appointments = $query
+            ->select([
+                'id',
+                'protocolo',
+                'nome_solicitante',
+                'categoria',
+                'prioridade',
+                'status',
+                'descricao',
+            ])
+            ->orderByDesc('data_criacao')
+            ->paginate(15);
 
         return response()->json($appointments);
     }
