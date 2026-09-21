@@ -5,17 +5,19 @@ import {
   categoryLabels,
   priorityLabels,
 } from "../constants/appointment";
-import type { AppointmentForm } from "../interfaces/Appointment";
+import type {
+  AppointmentForm,
+  Category,
+  Priority,
+} from "../interfaces/Appointment";
 import Panel from "../components/ui/Panel";
 
-type Category = "CONSULTA" | "EXAME" | "VACINACAO" | "OUTRO";
-type Priority = "BAIXA" | "MEDIA" | "ALTA" | "URGENTE";
 type FormErrors = Partial<Record<keyof AppointmentForm, string>>;
 
 type AppointmentRequestProps = {
   form: AppointmentForm;
   setForm: Dispatch<SetStateAction<AppointmentForm>>;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onSubmit: () => Promise<void>;
   isSubmitting: boolean;
   submitSuccess: boolean;
   submitError: string | null;
@@ -56,16 +58,16 @@ export default function AppointmentRequest({
   const [errors, setErrors] = useState<FormErrors>({});
   const isUrgente = form.prioridade === "URGENTE";
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     const found = validate(form);
     setErrors(found);
 
     if (Object.keys(found).length > 0) {
-      event.preventDefault();
       return;
     }
 
-    onSubmit(event);
+    await onSubmit();
   }
 
   function update<K extends keyof AppointmentForm>(

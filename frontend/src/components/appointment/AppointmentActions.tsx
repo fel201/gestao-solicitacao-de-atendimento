@@ -14,6 +14,41 @@ type AppointmentActionsProps = {
   className?: string;
 };
 
+function confirmationContent(status: Status) {
+  switch (status) {
+    case "EM_ANALISE":
+      return {
+        title: "Iniciar análise?",
+        description: "Confirme que deseja enviar esta solicitação para análise.",
+        confirmLabel: "Iniciar análise",
+      };
+    case "AGENDADA":
+      return {
+        title: "Agendar solicitação?",
+        description: "Confirme que deseja marcar esta solicitação como agendada.",
+        confirmLabel: "Confirmar agendamento",
+      };
+    case "CONCLUIDA":
+      return {
+        title: "Concluir solicitação?",
+        description: "Confirme que deseja marcar esta solicitação como concluída.",
+        confirmLabel: "Concluir solicitação",
+      };
+    case "CANCELADA":
+      return {
+        title: "Cancelar solicitação?",
+        description: "Essa ação encerra a solicitação e não poderá ser desfeita.",
+        confirmLabel: "Cancelar solicitação",
+      };
+    default:
+      return {
+        title: "Atualizar status?",
+        description: "Confirme a alteração de status desta solicitação.",
+        confirmLabel: "Confirmar alteração",
+      };
+  }
+}
+
 export default function AppointmentActions({
   status,
   appointmentId,
@@ -24,6 +59,9 @@ export default function AppointmentActions({
   const [pendingStatus, setPendingStatus] = useState<Status | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState<Status | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const confirmation = pendingStatus
+    ? confirmationContent(pendingStatus)
+    : null;
 
   async function updateStatus(nextStatus: Status) {
     setUpdatingStatus(nextStatus);
@@ -44,13 +82,8 @@ export default function AppointmentActions({
     }
   }
 
-  async function requestStatusChange(nextStatus: Status) {
-    if (nextStatus === "EM_ANALISE" || nextStatus === "CANCELADA") {
-      setPendingStatus(nextStatus);
-      return;
-    }
-
-    await updateStatus(nextStatus);
+  function requestStatusChange(nextStatus: Status) {
+    setPendingStatus(nextStatus);
   }
 
   async function confirmStatusChange() {
@@ -85,21 +118,9 @@ export default function AppointmentActions({
       )}
       <ConfirmDialog
         open={pendingStatus !== null}
-        title={
-          pendingStatus === "CANCELADA"
-            ? "Cancelar solicitação?"
-            : "Enviar para análise?"
-        }
-        description={
-          pendingStatus === "CANCELADA"
-            ? "Essa ação encerra a solicitação e não poderá ser desfeita."
-            : "Confirme que deseja alterar o status desta solicitação para Em análise."
-        }
-        confirmLabel={
-          pendingStatus === "CANCELADA"
-            ? "Cancelar solicitação"
-            : "Confirmar análise"
-        }
+        title={confirmation?.title ?? ""}
+        description={confirmation?.description ?? ""}
+        confirmLabel={confirmation?.confirmLabel ?? ""}
         destructive={pendingStatus === "CANCELADA"}
         isConfirming={updatingStatus !== null}
         onConfirm={confirmStatusChange}

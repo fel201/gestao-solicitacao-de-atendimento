@@ -33,6 +33,18 @@ export function listAppointments(filters: AppointmentFilters) {
   );
 }
 
+export function getAppointmentSummary(filters: AppointmentFilters) {
+  const params = new URLSearchParams();
+  if (filters.status) params.set("status", filters.status);
+  if (filters.categoria) params.set("categoria", filters.categoria);
+  if (filters.prioridade) params.set("prioridade", filters.prioridade);
+
+  const query = params.toString();
+  return request<Array<{ status: Status; total: number }>>(
+    `/appointments/summary${query ? `?${query}` : ""}`,
+  );
+}
+
 export function getAppointment(id: number) {
   return request<Appointment>(`/appointments/${id}`);
 }

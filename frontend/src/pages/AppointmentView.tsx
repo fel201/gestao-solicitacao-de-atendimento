@@ -1,4 +1,10 @@
-import type { Appointment, Status } from "../interfaces/Appointment";
+import type {
+  Appointment,
+  Category,
+  FilterValue,
+  Priority,
+  Status,
+} from "../interfaces/Appointment";
 import AppointmentCard from "../components/appointment/AppointmentCard";
 import AppointmentFilters from "../components/appointment/AppointmentFilters";
 import AppointmentListFeedback from "../components/appointment/AppointmentListFeedback";
@@ -10,12 +16,12 @@ type AppointmentViewProps = {
   summary: Array<{ status: Status; total: number }>;
   loading: boolean;
   error: string | null;
-  statusFilter: string;
-  categoryFilter: string;
-  priorityFilter: string;
-  onStatusFilterChange: (value: string) => void;
-  onCategoryFilterChange: (value: string) => void;
-  onPriorityFilterChange: (value: string) => void;
+  statusFilter: FilterValue<Status>;
+  categoryFilter: FilterValue<Category>;
+  priorityFilter: FilterValue<Priority>;
+  onStatusFilterChange: (value: FilterValue<Status>) => void;
+  onCategoryFilterChange: (value: FilterValue<Category>) => void;
+  onPriorityFilterChange: (value: FilterValue<Priority>) => void;
   onApplyFilters: () => void;
   hasAppliedFilters: boolean;
   onRetry: () => void;

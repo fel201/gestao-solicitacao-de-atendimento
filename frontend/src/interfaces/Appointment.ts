@@ -20,23 +20,14 @@ export type Appointment = {
   data_atualizacao: string;
 };
 
-export type AppointmentListItem = Pick<
-  Appointment,
-  | "id"
-  | "protocolo"
-  | "nome_solicitante"
-  | "categoria"
-  | "prioridade"
-  | "status"
-  | "descricao"
->;
-
 export type AppointmentFilters = {
-  status?: string;
-  categoria?: string;
-  prioridade?: string;
+  status?: Status;
+  categoria?: Category;
+  prioridade?: Priority;
   page?: number;
 };
+
+export type FilterValue<T> = T | "";
 
 export type PaginatedResponse<T> = {
   data: T[];

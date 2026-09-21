@@ -1,4 +1,3 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
 import {
   Navigate,
   Route,
@@ -8,29 +7,11 @@ import {
   useParams,
 } from "react-router";
 import NavigationSidebar from "./components/layout/NavigationSidebar";
-import type {
-  Appointment,
-  AppointmentForm,
-  Category,
-  Priority,
-  Status,
-} from "./interfaces/Appointment";
+import type { Appointment, Status } from "./interfaces/Appointment";
+import useAppointments from "./hooks/useAppointments";
 import AppointmentDetails from "./pages/AppointmentDetails";
 import AppointmentRequest from "./pages/AppointmentRequest";
 import AppointmentView from "./pages/AppointmentView";
-import {
-  createAppointment,
-  listAppointments,
-  updateAppointmentStatus,
-} from "./services/appointments";
-
-const initialForm: AppointmentForm = {
-  nome_solicitante: "",
-  categoria: "CONSULTA" as Category,
-  prioridade: "MEDIA" as Priority,
-  descricao: "",
-  justificativa_prioridade: "",
-};
 
 function DetailsRoute({ onUpdateStatus }: {
   onUpdateStatus: (id: number, status: Status) => Promise<void>;
@@ -65,104 +46,7 @@ function DetailsRoute({ onUpdateStatus }: {
 
 export default function App() {
   const navigate = useNavigate();
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [lastPage, setLastPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState<AppointmentForm>(initialForm);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [priorityFilter, setPriorityFilter] = useState("");
-  const [appliedStatusFilter, setAppliedStatusFilter] = useState("");
-  const [appliedCategoryFilter, setAppliedCategoryFilter] = useState("");
-  const [appliedPriorityFilter, setAppliedPriorityFilter] = useState("");
-
-  const fetchAppointments = async (page = currentPage) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const data = await listAppointments({
-        status: appliedStatusFilter,
-        categoria: appliedCategoryFilter,
-        prioridade: appliedPriorityFilter,
-        page,
-      });
-      setAppointments(data.data);
-      setCurrentPage(data.current_page);
-      setLastPage(data.last_page);
-      setTotal(data.total);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao carregar dados.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAppointments();
-  }, [
-    appliedStatusFilter,
-    appliedCategoryFilter,
-    appliedPriorityFilter,
-    currentPage,
-  ]);
-
-  const applyFilters = () => {
-    setAppliedStatusFilter(statusFilter);
-    setAppliedCategoryFilter(categoryFilter);
-    setAppliedPriorityFilter(priorityFilter);
-    setCurrentPage(1);
-  };
-
-  const summary = useMemo(() => {
-    const map = new Map<Status, number>();
-    for (const item of appointments) {
-      map.set(item.status, (map.get(item.status) ?? 0) + 1);
-    }
-    return Array.from(map.entries()).map(([status, total]) => ({
-      status,
-      total,
-    }));
-  }, [appointments]);
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-    setSubmitSuccess(false);
-    setSubmitError(null);
-
-    try {
-      await createAppointment(form);
-
-      setForm(initialForm);
-      setSubmitSuccess(true);
-      await fetchAppointments(1);
-    } catch (err) {
-      setSubmitError(
-        err instanceof Error ? err.message : "Erro ao salvar solicitação.",
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const updateStatus = async (id: number, status: Status) => {
-    try {
-      await updateAppointmentStatus(id, status);
-      await fetchAppointments();
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Erro ao atualizar status.",
-      );
-      throw err;
-    }
-  };
+  const appointmentData = useAppointments();
 
   return (
     <div className="min-h-screen bg-[#0f0f0f] text-slate-100 lg:flex">
@@ -183,33 +67,29 @@ export default function App() {
               path="/solicitacoes"
               element={
                 <AppointmentView
-                  appointments={appointments}
-                  summary={summary}
-                  loading={loading}
-                  error={error}
-                  statusFilter={statusFilter}
-                  categoryFilter={categoryFilter}
-                  priorityFilter={priorityFilter}
-                  onStatusFilterChange={setStatusFilter}
-                  onCategoryFilterChange={setCategoryFilter}
-                  onPriorityFilterChange={setPriorityFilter}
-                  onApplyFilters={applyFilters}
-                  hasAppliedFilters={Boolean(
-                    appliedStatusFilter ||
-                    appliedCategoryFilter ||
-                    appliedPriorityFilter,
-                  )}
-                  onRetry={fetchAppointments}
-                  currentPage={currentPage}
-                  lastPage={lastPage}
-                  total={total}
-                  onPageChange={setCurrentPage}
+                  appointments={appointmentData.appointments}
+                  summary={appointmentData.summary}
+                  loading={appointmentData.loading}
+                  error={appointmentData.error}
+                  statusFilter={appointmentData.statusFilter}
+                  categoryFilter={appointmentData.categoryFilter}
+                  priorityFilter={appointmentData.priorityFilter}
+                  onStatusFilterChange={appointmentData.setStatusFilter}
+                  onCategoryFilterChange={appointmentData.setCategoryFilter}
+                  onPriorityFilterChange={appointmentData.setPriorityFilter}
+                  onApplyFilters={appointmentData.applyFilters}
+                  hasAppliedFilters={appointmentData.hasAppliedFilters}
+                  onRetry={appointmentData.retry}
+                  currentPage={appointmentData.currentPage}
+                  lastPage={appointmentData.lastPage}
+                  total={appointmentData.total}
+                  onPageChange={appointmentData.setCurrentPage}
                   onViewDetails={(appointment) =>
                     navigate(`/solicitacoes/${appointment.id}`, {
                       state: { appointment },
                     })
                   }
-                  onUpdateStatus={updateStatus}
+                  onUpdateStatus={appointmentData.updateStatus}
                 />
               }
             />
@@ -217,12 +97,12 @@ export default function App() {
               path="/solicitacoes/nova"
               element={
                 <AppointmentRequest
-                  form={form}
-                  setForm={setForm}
-                  onSubmit={handleSubmit}
-                  isSubmitting={isSubmitting}
-                  submitSuccess={submitSuccess}
-                  submitError={submitError}
+                  form={appointmentData.form}
+                  setForm={appointmentData.setForm}
+                  onSubmit={appointmentData.submitAppointment}
+                  isSubmitting={appointmentData.isSubmitting}
+                  submitSuccess={appointmentData.submitSuccess}
+                  submitError={appointmentData.submitError}
                 />
               }
             />
@@ -230,7 +110,7 @@ export default function App() {
               path="/solicitacoes/:id"
               element={
                 <DetailsRoute
-                  onUpdateStatus={updateStatus}
+                  onUpdateStatus={appointmentData.updateStatus}
                 />
               }
             />

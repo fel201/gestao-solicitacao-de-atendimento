@@ -1,10 +1,22 @@
+import {
+  categoryLabels,
+  priorityLabels,
+  statusDisplayLabels,
+} from "../../constants/appointment";
+import type {
+  Category,
+  FilterValue,
+  Priority,
+  Status,
+} from "../../interfaces/Appointment";
+
 type AppointmentFiltersProps = {
-  status: string;
-  category: string;
-  priority: string;
-  onStatusChange: (value: string) => void;
-  onCategoryChange: (value: string) => void;
-  onPriorityChange: (value: string) => void;
+  status: FilterValue<Status>;
+  category: FilterValue<Category>;
+  priority: FilterValue<Priority>;
+  onStatusChange: (value: FilterValue<Status>) => void;
+  onCategoryChange: (value: FilterValue<Category>) => void;
+  onPriorityChange: (value: FilterValue<Priority>) => void;
   onApply: () => void;
 };
 
@@ -34,7 +46,9 @@ export default function AppointmentFilters({
           <select
             className={selectClass}
             value={status}
-            onChange={(event) => onStatusChange(event.target.value)}
+            onChange={(event) =>
+              onStatusChange(event.target.value as FilterValue<Status>)
+            }
           >
             <option value="">Todos os status</option>
             <option value="RECEBIDA">{statusDisplayLabels.RECEBIDA}</option>
@@ -49,7 +63,9 @@ export default function AppointmentFilters({
           <select
             className={selectClass}
             value={category}
-            onChange={(event) => onCategoryChange(event.target.value)}
+            onChange={(event) =>
+              onCategoryChange(event.target.value as FilterValue<Category>)
+            }
           >
             <option value="">Todas as categorias</option>
             <option value="CONSULTA">{categoryLabels.CONSULTA}</option>
@@ -63,7 +79,9 @@ export default function AppointmentFilters({
           <select
             className={selectClass}
             value={priority}
-            onChange={(event) => onPriorityChange(event.target.value)}
+            onChange={(event) =>
+              onPriorityChange(event.target.value as FilterValue<Priority>)
+            }
           >
             <option value="">Todas as prioridades</option>
             <option value="BAIXA">{priorityLabels.BAIXA}</option>
@@ -83,8 +101,3 @@ export default function AppointmentFilters({
     </div>
   );
 }
-import {
-  categoryLabels,
-  priorityLabels,
-  statusDisplayLabels,
-} from "../../constants/appointment";
