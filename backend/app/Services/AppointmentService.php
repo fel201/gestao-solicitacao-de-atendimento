@@ -70,7 +70,7 @@ class AppointmentService
     public function validateTransition(string $currentStatus, string $newStatus): bool
     {
         if ($currentStatus === $newStatus) {
-            return true;
+            return false;
         }
 
         $allowedStatuses = self::STATUS_FLOW[$currentStatus] ?? [];

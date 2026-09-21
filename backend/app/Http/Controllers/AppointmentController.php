@@ -16,6 +16,30 @@ class AppointmentController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $appointments = $this->filteredAppointments($request)
+            ->orderByDesc('data_criacao')
+            ->paginate(15);
+
+        return response()->json($appointments);
+    }
+
+    public function summary(Request $request): JsonResponse
+    {
+        $summary = $this->filteredAppointments($request)
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->orderBy('status')
+            ->get()
+            ->map(fn (Appointment $appointment) => [
+                'status' => $appointment->status,
+                'total' => (int) $appointment->total,
+            ]);
+
+        return response()->json($summary);
+    }
+
+    private function filteredAppointments(Request $request)
+    {
         $query = Appointment::query();
 
         foreach (['status', 'categoria', 'prioridade'] as $filter) {
@@ -24,9 +48,7 @@ class AppointmentController extends Controller
             }
         }
 
-        $appointments = $query->orderByDesc('data_criacao')->paginate(15);
-
-        return response()->json($appointments);
+        return $query;
     }
 
     public function show(int $id): JsonResponse
