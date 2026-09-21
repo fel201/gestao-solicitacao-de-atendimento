@@ -50,10 +50,10 @@ export default function AppointmentDetails({
   }
 
   return (
-    <Panel className="p-5">
+    <Panel className="overflow-hidden p-0">
       {error && (
         <div
-          className="mb-5 rounded-md border border-red-200 bg-red-50 p-4 text-red-800"
+          className="m-5 rounded-md border border-red-200 bg-red-50 p-4 text-red-800"
           role="alert"
         >
           <p className="font-medium">Não foi possível concluir a operação.</p>
@@ -68,83 +68,89 @@ export default function AppointmentDetails({
         </div>
       )}
 
-      <button
-        type="button"
-        className="text-cyan-300 hover:text-cyan-200 font-medium text-sm mb-5"
-        onClick={onBack}
-      >
-        ← Voltar para solicitações
-      </button>
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-sm uppercase tracking-wide text-slate-400">
-            Detalhes da solicitação
-          </p>
-          <h2 className="text-2xl font-semibold text-slate-100">
-            {appointment.protocolo}
-          </h2>
-        </div>
-        <span
-          className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-sm ${statusBadgeClasses[appointment.status]}`}
+      <header className="border-b border-[#3f4b59] from-[#1b252d] to-[#161616] px-5 py-6 sm:px-8">
+        <button
+          type="button"
+          className="mb-7 text-sm font-medium text-cyan-100 hover:text-cyan-200"
+          onClick={onBack}
         >
-          {appointment.status}
-        </span>
-      </div>
-
-      <dl className="grid gap-4 mt-6 sm:grid-cols-2">
-        <div>
-          <dt className="text-sm text-slate-400">Nome do solicitante</dt>
-          <dd className="font-medium text-slate-100">
-            {appointment.nome_solicitante}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-sm text-slate-400">Categoria</dt>
-          <dd className="font-medium text-slate-100">
-            {appointment.categoria}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-sm text-slate-400">Prioridade</dt>
-          <dd
-            className={`font-medium ${priorityBadgeClasses[appointment.prioridade]}`}
+          ← Voltar para solicitações
+        </button>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="mt-1 font-mono text-2xl font-semibold text-cyan-300">
+              Solicitação {appointment.protocolo}
+            </h2>
+          </div>
+          <span
+            className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-sm ${statusBadgeClasses[appointment.status]}`}
           >
-            {appointment.prioridade}
-          </dd>
+            {appointment.status}
+          </span>
         </div>
-        <div>
-          <dt className="text-sm text-slate-400">Criada em</dt>
-          <dd className="font-medium text-slate-100">
-            {formatDate(appointment.data_criacao)}
-          </dd>
-        </div>
-        <div className="sm:col-span-2">
-          <dt className="text-sm text-slate-400">Descrição</dt>
-          <dd className="whitespace-pre-wrap text-slate-100">
-            {appointment.descricao}
-          </dd>
-        </div>
-        {appointment.justificativa_prioridade && (
-          <div className="sm:col-span-2">
-            <dt className="text-sm text-slate-400">
-              Justificativa da prioridade
+      </header>
+
+      <article className="mx-auto max-w-4xl px-5 py-7 sm:px-8 sm:py-9">
+        <p className="mt-3 text-lg font-medium text-slate-100">
+              {appointment.nome_solicitante}
+        </p>
+        <dl className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded-lg border border-[#3f4b59] bg-[#1b1b1b] p-4">
+            <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">
+              Categoria
             </dt>
-            <dd className="whitespace-pre-wrap text-slate-100">
-              {appointment.justificativa_prioridade}
+            <dd className="mt-2 font-medium text-slate-100">
+              {appointment.categoria}
             </dd>
           </div>
-        )}
-        <div>
-          <dt className="text-sm text-slate-400">Última atualização</dt>
-          <dd className="font-medium text-slate-100">
-            {formatDate(appointment.data_atualizacao)}
-          </dd>
-        </div>
-      </dl>
+          <div className="rounded-lg border border-[#3f4b59] bg-[#1b1b1b] p-4">
+            <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">
+              Prioridade
+            </dt>
+            <dd className="mt-2">
+              <span
+                className={`inline-flex rounded-full border px-2 py-1 text-xs font-medium ${priorityBadgeClasses[appointment.prioridade]}`}
+              >
+                {appointment.prioridade}
+              </span>
+            </dd>
+          </div>
+          <div className="rounded-lg border border-[#3f4b59] bg-[#1b1b1b] p-4">
+            <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">
+              Criada em
+            </dt>
+            <dd className="mt-2 text-sm font-medium text-slate-100">
+              {formatDate(appointment.data_criacao)}
+            </dd>
+          </div>
+        </dl>
+
+        <section className="mt-9">
+          <h3 className="text-sm font-medium uppercase tracking-wide text-slate-400">
+            Descrição
+          </h3>
+          <p className="mt-3 whitespace-pre-wrap border-l-2 border-cyan-400/70 pl-4 text-base leading-7 text-slate-100">
+            {appointment.descricao}
+          </p>
+        </section>
+
+        <section className="mt-8 rounded-lg border border-amber-400/25 bg-amber-400/5 p-5">
+          <h3 className="text-sm font-medium text-amber-200">
+            Justificativa da prioridade
+          </h3>
+          <p className="mt-2 whitespace-pre-wrap leading-7 text-slate-200">
+            {appointment.justificativa_prioridade?.trim() ||
+              "Nenhuma justificativa informada."}
+          </p>
+        </section>
+
+        <p className="mt-8 text-sm text-slate-400">
+          Última atualização: {formatDate(appointment.data_atualizacao)}
+        </p>
+      </article>
 
       {allowedStatuses.length > 0 && (
-        <div className="mt-7 flex flex-wrap justify-end gap-2">
+        <footer className="flex flex-wrap justify-end gap-2 border-t border-[#3f4b59] bg-[#141414] px-5 py-4 sm:px-8">
           {allowedStatuses.map((status) => (
             <button
               key={status}
@@ -155,7 +161,7 @@ export default function AppointmentDetails({
               {statusLabels[status]}
             </button>
           ))}
-        </div>
+        </footer>
       )}
       <ConfirmDialog
         open={pendingStatus !== null}
