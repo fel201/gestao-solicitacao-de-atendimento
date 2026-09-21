@@ -1,9 +1,16 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
-import { Navigate, Route, Routes, useNavigate, useParams } from "react-router";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router";
 import NavigationSidebar from "./components/layout/NavigationSidebar";
 import type {
+  Appointment,
   AppointmentForm,
-  AppointmentListItem,
   Category,
   Priority,
   Status,
@@ -30,7 +37,11 @@ function DetailsRoute({ onUpdateStatus }: {
 }) {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const appointmentId = Number(id);
+  const initialAppointment = (
+    location.state as { appointment?: Appointment } | null
+  )?.appointment;
 
   if (!Number.isInteger(appointmentId) || appointmentId < 1) {
     return (
@@ -43,6 +54,9 @@ function DetailsRoute({ onUpdateStatus }: {
   return (
     <AppointmentDetails
       appointmentId={appointmentId}
+      initialAppointment={
+        initialAppointment?.id === appointmentId ? initialAppointment : undefined
+      }
       onBack={() => navigate("/solicitacoes")}
       onUpdateStatus={onUpdateStatus}
     />
@@ -51,7 +65,7 @@ function DetailsRoute({ onUpdateStatus }: {
 
 export default function App() {
   const navigate = useNavigate();
-  const [appointments, setAppointments] = useState<AppointmentListItem[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -191,7 +205,9 @@ export default function App() {
                   total={total}
                   onPageChange={setCurrentPage}
                   onViewDetails={(appointment) =>
-                    navigate(`/solicitacoes/${appointment.id}`)
+                    navigate(`/solicitacoes/${appointment.id}`, {
+                      state: { appointment },
+                    })
                   }
                   onUpdateStatus={updateStatus}
                 />

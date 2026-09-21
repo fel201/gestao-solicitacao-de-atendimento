@@ -7,24 +7,29 @@ import DetailField from "../components/ui/DetailField";
 import Panel from "../components/ui/Panel";
 import { getAppointment } from "../services/appointments";
 import formatDate from "../utils/formatDate";
+import { categoryLabels } from "../constants/appointment";
 
 type AppointmentDetailsProps = {
   appointmentId: number;
+  initialAppointment?: Appointment;
   onBack: () => void;
   onUpdateStatus: (id: number, status: Status) => Promise<void>;
 };
 
 export default function AppointmentDetails({
   appointmentId,
+  initialAppointment,
   onBack,
   onUpdateStatus,
 }: AppointmentDetailsProps) {
-  const [appointment, setAppointment] = useState<Appointment | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [appointment, setAppointment] = useState<Appointment | null>(
+    initialAppointment ?? null,
+  );
+  const [loading, setLoading] = useState(!initialAppointment);
   const [error, setError] = useState<string | null>(null);
 
-  async function loadAppointment() {
-    setLoading(true);
+  async function loadAppointment(showLoading = true) {
+    if (showLoading) setLoading(true);
     setError(null);
 
     try {
@@ -41,18 +46,20 @@ export default function AppointmentDetails({
   }
 
   useEffect(() => {
-    loadAppointment();
-  }, [appointmentId]);
+    setAppointment(initialAppointment ?? null);
+    setLoading(!initialAppointment);
+    loadAppointment(!initialAppointment);
+  }, [appointmentId, initialAppointment]);
 
-  if (loading) {
-    return (
-      <Panel className="p-5 text-slate-300" role="status">
-        Carregando solicitação...
-      </Panel>
-    );
-  }
+  if (!appointment) {
+    if (loading) {
+      return (
+        <Panel className="p-5 text-slate-300" role="status">
+          Carregando solicitação...
+        </Panel>
+      );
+    }
 
-  if (error || !appointment) {
     return (
       <Panel className="p-5">
         <div className="rounded-md border border-red-200 bg-red-50 p-4 text-red-800" role="alert">
@@ -62,7 +69,7 @@ export default function AppointmentDetails({
             <button
               type="button"
               className="rounded-md bg-red-700 px-3 py-2 text-sm text-white hover:bg-red-800"
-              onClick={loadAppointment}
+              onClick={() => loadAppointment()}
             >
               Tentar novamente
             </button>
@@ -104,7 +111,9 @@ export default function AppointmentDetails({
               {appointment.nome_solicitante}
         </p>
         <dl className="grid gap-3 sm:grid-cols-3">
-          <DetailField label="Categoria">{appointment.categoria}</DetailField>
+          <DetailField label="Categoria">
+            {categoryLabels[appointment.categoria]}
+          </DetailField>
           <DetailField label="Prioridade">
             <PriorityBadge priority={appointment.prioridade} />
           </DetailField>
@@ -142,7 +151,7 @@ export default function AppointmentDetails({
         appointmentId={appointment.id}
         onUpdateStatus={async (id, status) => {
           await onUpdateStatus(id, status);
-          await loadAppointment();
+          await loadAppointment(false);
         }}
         className="flex flex-wrap justify-end gap-2 border-t border-[#3f4b59] bg-[#141414] px-5 py-4 sm:px-8"
       />

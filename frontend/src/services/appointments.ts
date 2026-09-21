@@ -2,7 +2,6 @@ import type {
   Appointment,
   AppointmentFilters,
   AppointmentForm,
-  AppointmentListItem,
   PaginatedResponse,
   Status,
 } from "../interfaces/Appointment";
@@ -29,7 +28,7 @@ export function listAppointments(filters: AppointmentFilters) {
   if (filters.page) params.set("page", String(filters.page));
 
   const query = params.toString();
-  return request<PaginatedResponse<AppointmentListItem>>(
+  return request<PaginatedResponse<Appointment>>(
     `/appointments${query ? `?${query}` : ""}`,
   );
 }

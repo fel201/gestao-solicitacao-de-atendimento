@@ -4,6 +4,7 @@ type ConfirmDialogProps = {
   description: string;
   confirmLabel: string;
   destructive?: boolean;
+  isConfirming?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -14,6 +15,7 @@ export default function ConfirmDialog({
   description,
   confirmLabel,
   destructive = false,
+  isConfirming = false,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -41,11 +43,15 @@ export default function ConfirmDialog({
           {description}
         </p>
         <div className="mt-6 flex justify-end gap-3">
-          <Button variant="secondary" onClick={onCancel}>
+          <Button variant="secondary" onClick={onCancel} disabled={isConfirming}>
             Voltar
           </Button>
-          <Button variant={destructive ? "danger" : "primary"} onClick={onConfirm}>
-            {confirmLabel}
+          <Button
+            variant={destructive ? "danger" : "primary"}
+            onClick={onConfirm}
+            disabled={isConfirming}
+          >
+            {isConfirming ? "Atualizando..." : confirmLabel}
           </Button>
         </div>
       </div>

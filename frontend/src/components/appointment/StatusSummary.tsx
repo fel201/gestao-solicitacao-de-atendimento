@@ -1,4 +1,5 @@
 import type { Status } from "../../interfaces/Appointment";
+import { statusDisplayLabels } from "../../constants/appointment";
 
 type StatusSummaryProps = { summary: Array<{ status: Status; total: number }> };
 
@@ -10,7 +11,9 @@ export default function StatusSummary({ summary }: StatusSummaryProps) {
           key={item.status}
           className="rounded-xl border border-[#3f4b59] p-5 shadow-sm"
         >
-          <span className="mb-2 block text-slate-300">{item.status}</span>
+          <span className="mb-2 block text-slate-300">
+            {statusDisplayLabels[item.status]}
+          </span>
           <strong className="text-2xl text-slate-100">{item.total}</strong>
         </article>
       ))}

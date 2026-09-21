@@ -1,6 +1,7 @@
-import type { AppointmentListItem, Status } from "../../interfaces/Appointment";
+import type { Appointment, Status } from "../../interfaces/Appointment";
 import {
   categoryBadgeClass,
+  categoryLabels,
   priorityBorderClasses,
 } from "../../constants/appointment";
 import AppointmentActions from "./AppointmentActions";
@@ -8,8 +9,8 @@ import PriorityBadge from "./PriorityBadge";
 import StatusBadge from "./StatusBadge";
 
 type AppointmentCardProps = {
-  appointment: AppointmentListItem;
-  onViewDetails: (appointment: AppointmentListItem) => void;
+  appointment: Appointment;
+  onViewDetails: (appointment: Appointment) => void;
   onUpdateStatus: (id: number, status: Status) => Promise<void>;
 };
 
@@ -38,7 +39,7 @@ export default function AppointmentCard({
           <span
             className={`rounded-full bg-transparent border px-2 py-1 ${categoryBadgeClass}`}
           >
-            {appointment.categoria}
+            {categoryLabels[appointment.categoria]}
           </span>
           <PriorityBadge priority={appointment.prioridade} showLabel />
         </div>

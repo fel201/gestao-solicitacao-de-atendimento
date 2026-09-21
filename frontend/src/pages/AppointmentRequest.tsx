@@ -1,6 +1,10 @@
 import type { Dispatch, FormEvent, SetStateAction } from "react";
 import { useState } from "react";
 import FormField from "../components/ui/FormField";
+import {
+  categoryLabels,
+  priorityLabels,
+} from "../constants/appointment";
 import type { AppointmentForm } from "../interfaces/Appointment";
 import Panel from "../components/ui/Panel";
 
@@ -123,10 +127,10 @@ export default function AppointmentRequest({
             }
             aria-invalid={Boolean(errors.categoria)}
           >
-            <option value="CONSULTA">CONSULTA</option>
-            <option value="EXAME">EXAME</option>
-            <option value="VACINACAO">VACINACAO</option>
-            <option value="OUTRO">OUTRO</option>
+            <option value="CONSULTA">{categoryLabels.CONSULTA}</option>
+            <option value="EXAME">{categoryLabels.EXAME}</option>
+            <option value="VACINACAO">{categoryLabels.VACINACAO}</option>
+            <option value="OUTRO">{categoryLabels.OUTRO}</option>
           </select>
         </FormField>
 
@@ -140,10 +144,10 @@ export default function AppointmentRequest({
             }
             aria-invalid={Boolean(errors.prioridade)}
           >
-            <option value="BAIXA">BAIXA</option>
-            <option value="MEDIA">MEDIA</option>
-            <option value="ALTA">ALTA</option>
-            <option value="URGENTE">URGENTE</option>
+            <option value="BAIXA">{priorityLabels.BAIXA}</option>
+            <option value="MEDIA">{priorityLabels.MEDIA}</option>
+            <option value="ALTA">{priorityLabels.ALTA}</option>
+            <option value="URGENTE">{priorityLabels.URGENTE}</option>
           </select>
         </FormField>
 

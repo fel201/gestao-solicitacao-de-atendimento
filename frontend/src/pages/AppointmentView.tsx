@@ -1,4 +1,4 @@
-import type { AppointmentListItem, Status } from "../interfaces/Appointment";
+import type { Appointment, Status } from "../interfaces/Appointment";
 import AppointmentCard from "../components/appointment/AppointmentCard";
 import AppointmentFilters from "../components/appointment/AppointmentFilters";
 import AppointmentListFeedback from "../components/appointment/AppointmentListFeedback";
@@ -6,7 +6,7 @@ import StatusSummary from "../components/appointment/StatusSummary";
 import Panel from "../components/ui/Panel";
 
 type AppointmentViewProps = {
-  appointments: AppointmentListItem[];
+  appointments: Appointment[];
   summary: Array<{ status: Status; total: number }>;
   loading: boolean;
   error: string | null;
@@ -23,7 +23,7 @@ type AppointmentViewProps = {
   lastPage: number;
   total: number;
   onPageChange: (page: number) => void;
-  onViewDetails: (appointment: AppointmentListItem) => void;
+  onViewDetails: (appointment: Appointment) => void;
   onUpdateStatus: (id: number, status: Status) => Promise<void>;
 };
 

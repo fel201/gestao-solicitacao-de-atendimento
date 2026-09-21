@@ -1,4 +1,4 @@
-import type { Priority, Status } from "../interfaces/Appointment";
+import type { Category, Priority, Status } from "../interfaces/Appointment";
 
 export const nextStatuses: Record<Status, Status[]> = {
   RECEBIDA: ["EM_ANALISE", "CANCELADA"],
@@ -14,6 +14,14 @@ export const statusLabels: Record<Status, string> = {
   AGENDADA: "Agendar",
   CONCLUIDA: "Concluir",
   CANCELADA: "Cancelar solicitação",
+};
+
+export const statusDisplayLabels: Record<Status, string> = {
+  RECEBIDA: "Recebida",
+  EM_ANALISE: "Em análise",
+  AGENDADA: "Agendada",
+  CONCLUIDA: "Concluída",
+  CANCELADA: "Cancelada",
 };
 
 export const statusBadgeClasses: Record<Status, string> = {
@@ -33,6 +41,13 @@ export const priorityBadgeClasses = {
 
 export const categoryBadgeClass =
   "border-slate-600 bg-slate-800 text-slate-300";
+
+export const categoryLabels: Record<Category, string> = {
+  CONSULTA: "Consulta",
+  EXAME: "Exame",
+  VACINACAO: "Vacinação",
+  OUTRO: "Outro",
+};
 
 export const priorityLabels: Record<Priority, string> = {
   BAIXA: "Baixa",

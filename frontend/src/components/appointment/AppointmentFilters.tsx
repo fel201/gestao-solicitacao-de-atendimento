@@ -37,11 +37,11 @@ export default function AppointmentFilters({
             onChange={(event) => onStatusChange(event.target.value)}
           >
             <option value="">Todos os status</option>
-            <option value="RECEBIDA">RECEBIDA</option>
-            <option value="EM_ANALISE">EM_ANALISE</option>
-            <option value="AGENDADA">AGENDADA</option>
-            <option value="CONCLUIDA">CONCLUIDA</option>
-            <option value="CANCELADA">CANCELADA</option>
+            <option value="RECEBIDA">{statusDisplayLabels.RECEBIDA}</option>
+            <option value="EM_ANALISE">{statusDisplayLabels.EM_ANALISE}</option>
+            <option value="AGENDADA">{statusDisplayLabels.AGENDADA}</option>
+            <option value="CONCLUIDA">{statusDisplayLabels.CONCLUIDA}</option>
+            <option value="CANCELADA">{statusDisplayLabels.CANCELADA}</option>
           </select>
         </label>
         <label className="flex flex-col gap-1 text-sm text-slate-300">
@@ -52,10 +52,10 @@ export default function AppointmentFilters({
             onChange={(event) => onCategoryChange(event.target.value)}
           >
             <option value="">Todas as categorias</option>
-            <option value="CONSULTA">CONSULTA</option>
-            <option value="EXAME">EXAME</option>
-            <option value="VACINACAO">VACINACAO</option>
-            <option value="OUTRO">OUTRO</option>
+            <option value="CONSULTA">{categoryLabels.CONSULTA}</option>
+            <option value="EXAME">{categoryLabels.EXAME}</option>
+            <option value="VACINACAO">{categoryLabels.VACINACAO}</option>
+            <option value="OUTRO">{categoryLabels.OUTRO}</option>
           </select>
         </label>
         <label className="flex flex-col gap-1 text-sm text-slate-300">
@@ -66,10 +66,10 @@ export default function AppointmentFilters({
             onChange={(event) => onPriorityChange(event.target.value)}
           >
             <option value="">Todas as prioridades</option>
-            <option value="BAIXA">BAIXA</option>
-            <option value="MEDIA">MEDIA</option>
-            <option value="ALTA">ALTA</option>
-            <option value="URGENTE">URGENTE</option>
+            <option value="BAIXA">{priorityLabels.BAIXA}</option>
+            <option value="MEDIA">{priorityLabels.MEDIA}</option>
+            <option value="ALTA">{priorityLabels.ALTA}</option>
+            <option value="URGENTE">{priorityLabels.URGENTE}</option>
           </select>
         </label>
         <button
@@ -83,3 +83,8 @@ export default function AppointmentFilters({
     </div>
   );
 }
+import {
+  categoryLabels,
+  priorityLabels,
+  statusDisplayLabels,
+} from "../../constants/appointment";

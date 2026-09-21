@@ -1,5 +1,8 @@
 import type { Status } from "../../interfaces/Appointment";
-import { statusBadgeClasses } from "../../constants/appointment";
+import {
+  statusBadgeClasses,
+  statusDisplayLabels,
+} from "../../constants/appointment";
 import Badge from "../ui/Badge";
 
 type StatusBadgeProps = {
@@ -13,7 +16,7 @@ export default function StatusBadge({
 }: StatusBadgeProps) {
   return (
     <Badge className={`px-3 ${statusBadgeClasses[status]} ${className}`}>
-      {status}
+      {statusDisplayLabels[status]}
     </Badge>
   );
 }
