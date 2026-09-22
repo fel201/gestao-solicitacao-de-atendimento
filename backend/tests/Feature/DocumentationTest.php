@@ -16,9 +16,16 @@ class DocumentationTest extends TestCase
 
     public function test_serves_the_openapi_specification(): void
     {
-        $this->get('/docs/openapi.yaml')
+        $response = $this->get('/docs/openapi.yaml');
+
+        $response
             ->assertOk()
-            ->assertHeader('Content-Type', 'application/yaml; charset=UTF-8')
-            ->assertSee('openapi: 3.0.3');
+            ->assertHeader('Content-Type', 'application/yaml; charset=UTF-8');
+
+        $this->assertNotNull($response->baseResponse->getFile());
+        $this->assertStringContainsString(
+            'openapi: 3.0.3',
+            file_get_contents($response->baseResponse->getFile()->getPathname()),
+        );
     }
 }

@@ -40,7 +40,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
     ports:
       - "8000:8000"
-    command: sh -c "php artisan migrate --force && exec php artisan serve --host=0.0.0.0 --port=8000"
+    command: sh -c "mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache && chmod -R 775 storage bootstrap/cache && php artisan migrate --force && exec php artisan serve --host=0.0.0.0 --port=8000"
 
   tests:
     build:
@@ -51,7 +51,7 @@ services:
       - ./backend:/var/www/html
       - ./docs:/var/www/docs:ro
       - backend_vendor:/var/www/html/vendor
-    command: sh -c "composer install --no-interaction --prefer-dist --no-progress && composer test"
+    command: sh -c "mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache && chmod -R 775 storage bootstrap/cache && composer install --no-interaction --prefer-dist --no-progress && composer test"
 
   frontend:
     image: node:20-alpine
