@@ -3,13 +3,18 @@ services:
     image: postgres:16-alpine
     container_name: solicitacao-db
     environment:
-      POSTGRES_DB: solicitacao_atendimento
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   backend:
     build:
@@ -19,20 +24,23 @@ services:
     working_dir: /var/www/html
     volumes:
       - ./backend:/var/www/html
+      - ./docs:/var/www/docs:ro
       - backend_vendor:/var/www/html/vendor
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       APP_ENV: local
-      APP_DEBUG: 'true'
+      APP_DEBUG: 'false'
       DB_CONNECTION: pgsql
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_DATABASE: solicitacao_atendimento
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
     ports:
       - "8000:8000"
+    command: sh -c "php artisan migrate --force && exec php artisan serve --host=0.0.0.0 --port=8000"
 
   tests:
     build:
@@ -41,6 +49,7 @@ services:
     working_dir: /var/www/html
     volumes:
       - ./backend:/var/www/html
+      - ./docs:/var/www/docs:ro
       - backend_vendor:/var/www/html/vendor
     command: sh -c "composer install --no-interaction --prefer-dist --no-progress && composer test"
 

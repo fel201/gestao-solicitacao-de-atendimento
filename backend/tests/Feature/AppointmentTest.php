@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Appointment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -83,6 +84,30 @@ class AppointmentTest extends TestCase
             ]);
     }
 
+    public function test_does_not_expose_database_details_when_persistence_fails(): void
+    {
+        config(['app.debug' => true]);
+        Schema::drop('atendimentos');
+
+        $response = $this->postJson('/api/v1/appointments', [
+            'nome_solicitante' => 'Pessoa Fictícia',
+            'categoria' => 'CONSULTA',
+            'prioridade' => 'MEDIA',
+            'descricao' => 'Solicitação para testar uma falha de persistência.',
+        ]);
+
+        $response->assertStatus(503)
+            ->assertExactJson([
+                'message' => 'O serviço está temporariamente indisponível. Tente novamente em instantes.',
+                'code' => 'DATABASE_UNAVAILABLE',
+            ]);
+
+        $content = strtolower($response->getContent());
+        $this->assertStringNotContainsString('sqlstate', $content);
+        $this->assertStringNotContainsString('atendimentos', $content);
+        $this->assertStringNotContainsString('insert into', $content);
+    }
+
     public function test_lists_full_appointment_data_and_applies_filters(): void
     {
         $matching = $this->createAppointment([
@@ -142,7 +167,12 @@ class AppointmentTest extends TestCase
             ->assertJsonPath('id', $appointment->id)
             ->assertJsonPath('justificativa_prioridade', $appointment->justificativa_prioridade);
 
-        $this->getJson('/api/v1/appointments/99999')->assertNotFound();
+        $this->getJson('/api/v1/appointments/99999')
+            ->assertNotFound()
+            ->assertExactJson([
+                'message' => 'O recurso solicitado não foi encontrado.',
+                'code' => 'HTTP_ERROR',
+            ]);
     }
 
     public function test_allows_only_the_next_status_in_the_defined_flow(): void

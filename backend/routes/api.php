@@ -2,10 +2,15 @@
 
 use App\Http\Controllers\AppointmentController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
-    Route::get('/health', fn () => response()->json(['status' => 'ok']));
+    Route::get('/health', function () {
+        DB::select('SELECT 1');
+
+        return response()->json(['status' => 'ok']);
+    });
     Route::get('/appointments', [AppointmentController::class, 'index']);
     Route::get('/appointments/summary', [AppointmentController::class, 'summary']);
     Route::get('/appointments/{id}', [AppointmentController::class, 'show']);

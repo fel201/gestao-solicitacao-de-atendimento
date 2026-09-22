@@ -1,0 +1,478 @@
+openapi: 3.0.3
+info:
+  title: API de Solicitações de Atendimento
+  version: 1.0.0
+  description: |
+    API Laravel do desafio Full Stack V-Lab. Utilize apenas dados fictícios.
+    Não há autenticação nesta versão. Requisições e respostas usam JSON;
+    envie Accept: application/json e Content-Type: application/json nos corpos.
+
+    A criação sempre define RECEBIDA. Transições permitidas:
+    RECEBIDA -> EM_ANALISE ou CANCELADA;
+    EM_ANALISE -> AGENDADA ou CANCELADA;
+    AGENDADA -> CONCLUIDA ou CANCELADA.
+    CONCLUIDA e CANCELADA são finais. Repetir o status atual é inválido.
+
+    Este documento descreve o contrato esperado para os campos de texto.
+    A implementação ainda não valida rigorosamente seus tipos e comprimentos:
+    entradas incompatíveis podem causar erro 500 em vez de 422.
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Ambiente local com Docker Compose
+tags:
+  - name: Solicitações
+    description: Cadastro, consulta e atualização de solicitações
+  - name: Saúde
+    description: Disponibilidade da API e da conexão com o PostgreSQL
+security: []
+paths:
+  /health:
+    get:
+      tags: [Saúde]
+      operationId: getHealth
+      summary: Verificar disponibilidade da API e do PostgreSQL
+      description: Executa uma consulta simples no PostgreSQL e retorna sucesso quando a conexão está disponível.
+      responses:
+        '200':
+          description: API disponível
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+              example:
+                status: ok
+        '503':
+          $ref: '#/components/responses/DatabaseUnavailable'
+  /appointments:
+    get:
+      tags: [Solicitações]
+      operationId: listAppointments
+      summary: Listar solicitações com paginação
+      description: |
+        Retorna até 15 registros por página, ordenados por data_criacao decrescente.
+        Filtros são combinados por AND e valores vazios são ignorados.
+        Não há validação de enum nos filtros: textos desconhecidos normalmente
+        retornam uma lista vazia, não um erro 422. A ordenação entre datas iguais
+        não possui critério de desempate explícito.
+      parameters:
+        - $ref: '#/components/parameters/StatusFilter'
+        - $ref: '#/components/parameters/CategoryFilter'
+        - $ref: '#/components/parameters/PriorityFilter'
+        - name: page
+          in: query
+          description: Número da página. Valores inválidos são normalizados pelo paginador Laravel.
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: Página de solicitações, inclusive quando vazia
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentPage'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      tags: [Solicitações]
+      operationId: createAppointment
+      summary: Criar solicitação
+      description: |
+        Gera protocolo único e datas automaticamente e define status RECEBIDA.
+        URGENTE exige justificativa_prioridade preenchida.
+        Um status válido enviado no cadastro é substituído por RECEBIDA;
+        um status desconhecido é rejeitado com 422.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAppointment'
+            examples:
+              regular:
+                summary: Solicitação comum com dados fictícios
+                value:
+                  nome_solicitante: Pessoa Fictícia A
+                  categoria: CONSULTA
+                  prioridade: MEDIA
+                  descricao: Solicitação fictícia para avaliação.
+              urgent:
+                summary: Solicitação urgente com justificativa fictícia
+                value:
+                  nome_solicitante: Pessoa Fictícia B
+                  categoria: EXAME
+                  prioridade: URGENTE
+                  descricao: Exame fictício para avaliação.
+                  justificativa_prioridade: Justificativa fictícia de urgência.
+      responses:
+        '201':
+          description: Solicitação criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '422':
+          description: Campos obrigatórios ausentes, enum inválido ou urgência sem justificativa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              example:
+                message: A justificativa da prioridade urgente é obrigatória.
+                errors:
+                  justificativa_prioridade:
+                    - A justificativa da prioridade urgente é obrigatória.
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /appointments/summary:
+    get:
+      tags: [Solicitações]
+      operationId: getAppointmentSummary
+      summary: Consultar totais por status
+      description: |
+        Considera todos os registros que correspondem aos filtros, sem paginação.
+        Retorna apenas status com registros, ordenados por status, e [] quando vazio.
+        Assim como na listagem, filtros não possuem validação de enum no backend.
+      parameters:
+        - $ref: '#/components/parameters/StatusFilter'
+        - $ref: '#/components/parameters/CategoryFilter'
+        - $ref: '#/components/parameters/PriorityFilter'
+      responses:
+        '200':
+          description: Totais dos status encontrados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [status, total]
+                  properties:
+                    status:
+                      $ref: '#/components/schemas/Status'
+                    total:
+                      type: integer
+                      minimum: 1
+              example:
+                - status: EM_ANALISE
+                  total: 2
+                - status: RECEBIDA
+                  total: 5
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /appointments/{id}:
+    parameters:
+      - $ref: '#/components/parameters/AppointmentId'
+    get:
+      tags: [Solicitações]
+      operationId: getAppointment
+      summary: Consultar detalhes de uma solicitação
+      responses:
+        '200':
+          description: Solicitação encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /appointments/{id}/status:
+    parameters:
+      - $ref: '#/components/parameters/AppointmentId'
+    patch:
+      tags: [Solicitações]
+      operationId: updateAppointmentStatus
+      summary: Atualizar status respeitando o fluxo permitido
+      description: |
+        Atualiza status e data_atualizacao. A solicitação é buscada antes da
+        validação do corpo: um id inexistente retorna 404 mesmo com corpo inválido.
+        Não existe controle de concorrência para atualizações simultâneas.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  $ref: '#/components/schemas/Status'
+            example:
+              status: EM_ANALISE
+      responses:
+        '200':
+          description: Solicitação atualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Status ausente ou inválido, transição não permitida ou solicitação finalizada
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ValidationError'
+                  - $ref: '#/components/schemas/MessageError'
+              examples:
+                missingStatus:
+                  value:
+                    message: O campo status é obrigatório.
+                    errors:
+                      status: [O campo status é obrigatório.]
+                invalidStatus:
+                  value:
+                    message: Status inválido.
+                    errors:
+                      status: [Status inválido.]
+                invalidTransition:
+                  value:
+                    message: Transição de status inválida.
+                terminalStatus:
+                  value:
+                    message: Atendimento finalizado não pode ter status alterado.
+        '500':
+          $ref: '#/components/responses/InternalError'
+components:
+  parameters:
+    AppointmentId:
+      name: id
+      in: path
+      required: true
+      description: Identificador numérico da solicitação
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+      example: 1
+    StatusFilter:
+      name: status
+      in: query
+      description: Status para comparação exata. O backend não rejeita textos fora dos valores listados.
+      schema:
+        $ref: '#/components/schemas/Status'
+    CategoryFilter:
+      name: categoria
+      in: query
+      description: Categoria para comparação exata. O backend não rejeita textos fora dos valores listados.
+      schema:
+        $ref: '#/components/schemas/Category'
+    PriorityFilter:
+      name: prioridade
+      in: query
+      description: Prioridade para comparação exata. O backend não rejeita textos fora dos valores listados.
+      schema:
+        $ref: '#/components/schemas/Priority'
+  responses:
+    DatabaseUnavailable:
+      description: O PostgreSQL não está disponível ou a consulta não pôde ser executada
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/MessageError'
+              - type: object
+                required: [code]
+                properties:
+                  code:
+                    type: string
+                    enum: [DATABASE_UNAVAILABLE]
+          example:
+            message: O serviço está temporariamente indisponível. Tente novamente em instantes.
+            code: DATABASE_UNAVAILABLE
+    NotFound:
+      description: Solicitação não encontrada. A mensagem do Laravel pode variar conforme idioma e debug.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MessageError'
+    InternalError:
+      description: |
+        Falha interna ou de persistência. Com debug habilitado, podem existir
+        campos adicionais com detalhes da exceção. Não dependa desses campos.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MessageError'
+  schemas:
+    Status:
+      type: string
+      enum: [RECEBIDA, EM_ANALISE, AGENDADA, CONCLUIDA, CANCELADA]
+    Category:
+      type: string
+      enum: [CONSULTA, EXAME, VACINACAO, OUTRO]
+    Priority:
+      type: string
+      enum: [BAIXA, MEDIA, ALTA, URGENTE]
+    CreateAppointment:
+      type: object
+      required: [nome_solicitante, categoria, prioridade, descricao]
+      description: |
+        Quando prioridade=URGENTE, justificativa_prioridade também é obrigatória
+        e deve conter texto. Strings são aparadas pelos middlewares Laravel.
+        A validação atual usa empty(), que também rejeita o texto "0" nos campos obrigatórios.
+      properties:
+        nome_solicitante:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Nome fictício; limite da coluna no banco, ainda sem validação de tamanho na API.
+        categoria:
+          $ref: '#/components/schemas/Category'
+        prioridade:
+          $ref: '#/components/schemas/Priority'
+        descricao:
+          type: string
+          minLength: 1
+        justificativa_prioridade:
+          type: string
+          nullable: true
+          description: Obrigatória e não vazia quando a prioridade for URGENTE.
+        status:
+          $ref: '#/components/schemas/Status'
+    Appointment:
+      type: object
+      required:
+        - id
+        - protocolo
+        - nome_solicitante
+        - categoria
+        - prioridade
+        - status
+        - descricao
+        - justificativa_prioridade
+        - data_criacao
+        - data_atualizacao
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        protocolo:
+          type: string
+          pattern: '^APT-[A-Z0-9]{10}$'
+          readOnly: true
+        nome_solicitante:
+          type: string
+        categoria:
+          $ref: '#/components/schemas/Category'
+        prioridade:
+          $ref: '#/components/schemas/Priority'
+        status:
+          $ref: '#/components/schemas/Status'
+        descricao:
+          type: string
+        justificativa_prioridade:
+          type: string
+          nullable: true
+        data_criacao:
+          type: string
+          format: date-time
+          readOnly: true
+        data_atualizacao:
+          type: string
+          format: date-time
+          readOnly: true
+      example:
+        id: 1
+        protocolo: APT-A1B2C3D4E5
+        nome_solicitante: Pessoa Fictícia A
+        categoria: CONSULTA
+        prioridade: MEDIA
+        status: RECEBIDA
+        descricao: Solicitação fictícia para avaliação.
+        justificativa_prioridade: null
+        data_criacao: '2026-09-21T12:00:00.000000Z'
+        data_atualizacao: '2026-09-21T12:00:00.000000Z'
+    AppointmentPage:
+      type: object
+      required: [current_page, data, first_page_url, from, last_page, last_page_url, links, next_page_url, path, per_page, prev_page_url, to, total]
+      properties:
+        current_page:
+          type: integer
+          minimum: 1
+        data:
+          type: array
+          maxItems: 15
+          items:
+            $ref: '#/components/schemas/Appointment'
+        first_page_url:
+          type: string
+          format: uri
+        from:
+          type: integer
+          nullable: true
+          description: Posição inicial, ou null quando a página está vazia.
+        last_page:
+          type: integer
+          minimum: 1
+        last_page_url:
+          type: string
+          format: uri
+        links:
+          type: array
+          items:
+            type: object
+            required: [url, label, active]
+            properties:
+              url:
+                type: string
+                format: uri
+                nullable: true
+              label:
+                type: string
+                description: Rótulo do Laravel; pode conter entidades HTML.
+              active:
+                type: boolean
+        next_page_url:
+          type: string
+          format: uri
+          nullable: true
+        path:
+          type: string
+          format: uri
+        per_page:
+          type: integer
+          enum: [15]
+        prev_page_url:
+          type: string
+          format: uri
+          nullable: true
+        to:
+          type: integer
+          nullable: true
+        total:
+          type: integer
+          minimum: 0
+      description: |
+        Paginação Laravel. Os links gerados não preservam automaticamente os
+        filtros nesta implementação; reenvie os filtros junto do parâmetro page.
+    MessageError:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+    ValidationError:
+      type: object
+      required: [message, errors]
+      properties:
+        message:
+          type: string
+          description: Resumo do erro; pode agregar a quantidade de mensagens adicionais.
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string

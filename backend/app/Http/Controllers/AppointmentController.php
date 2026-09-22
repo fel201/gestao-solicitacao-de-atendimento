@@ -62,9 +62,6 @@ class AppointmentController extends Controller
     {
         $data = $request->all();
 
-        error_log('DADOS RECEBIDOS:');
-        error_log(print_r($data, true));
-
         $errors = $this->appointmentService->validateCreation($data);
 
         // define o campo de status na variável data para RECEBIDO
