@@ -3,8 +3,7 @@ info:
   title: API de Solicitações de Atendimento
   version: 1.0.0
   description: |
-    API Laravel do desafio Full Stack V-Lab. Utilize apenas dados fictícios.
-    Não há autenticação nesta versão. Requisições e respostas usam JSON;
+    Utilize apenas dados fictícios. Requisições e respostas usam JSON;
     envie Accept: application/json e Content-Type: application/json nos corpos.
 
     A criação sempre define RECEBIDA. Transições permitidas:
@@ -14,8 +13,6 @@ info:
     CONCLUIDA e CANCELADA são finais. Repetir o status atual é inválido.
 
     Este documento descreve o contrato esperado para os campos de texto.
-    A implementação ainda não valida rigorosamente seus tipos e comprimentos:
-    entradas incompatíveis podem causar erro 500 em vez de 422.
 servers:
   - url: http://localhost:8000/api/v1
     description: Ambiente local com Docker Compose
