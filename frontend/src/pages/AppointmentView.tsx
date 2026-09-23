@@ -58,9 +58,6 @@ export default function AppointmentView({
     <div className="space-y-6">
       <StatusSummary summary={summary} />
       <Panel>
-        <h2 className="mb-3 text-lg font-semibold text-slate-100">
-          Solicitações
-        </h2>
 
         <AppointmentFilters
           status={statusFilter}

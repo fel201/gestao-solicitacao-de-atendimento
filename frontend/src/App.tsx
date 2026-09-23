@@ -53,15 +53,6 @@ export default function App() {
       <NavigationSidebar />
       <main className="min-w-0 flex-1 px-5 py-8 lg:px-10">
         <div className="mx-auto max-w-6xl">
-          <header className="mb-6">
-            <p className="text-cyan-300 uppercase text-xs tracking-wider">
-              Gestão de solicitações
-            </p>
-            <h2 className="text-2xl font-semibold text-slate-100">
-              Solicitações de Atendimento
-            </h2>
-          </header>
-
           <Routes>
             <Route
               path="/solicitacoes"

@@ -11,7 +11,7 @@ export default function NavigationSidebar() {
       <div className="p-5">
         <p className="text-xs uppercase tracking-wider text-cyan-300"></p>
         <h1 className="mt-1 text-xl font-semibold text-slate-100">
-          Solicitações de Atendimentos
+          Gestão de Solicitações de Atendimentos
         </h1>
       </div>
 
