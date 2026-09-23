@@ -65,20 +65,22 @@ cp backend/.env.example backend/.env
 
 ### 2. Construir as imagens e executar a aplicação
 
-Para instalar as imagens do backend e frontend, execute:
+No terminal: 
 
 ```sh
-docker compose build frontend
 docker compose build backend
 docker compose up -d backend frontend 
 ```
+
+Aqui você só precisa construir a imagem do backend, pois o serviço de frontend utiliza diretamente a imagem pronta node:20-alpine para desenvolvimento.
+
 
 | Serviço | Endereço |
 | --- | --- |
 | Interface | [http://localhost:5173](http://localhost:5173) |
 | API | [http://localhost:8000/api/v1/appointments](http://localhost:8000/api/v1/appointments) |
 | Health check da API | [http://localhost:8000/api/v1/health](http://localhost:8000/api/v1/health) |
-| Documentação Swagger UI | [http://localhost:8000/docs](http://localhost:8000/docs) |
+| Documentação Swagger UI | [http://localhost:8000/api/v1/docs](http://localhost:8000/api/v1/docs) |
 
 O domínio localhost:8000 é o padrão, mas você pode modificar isso nas variáveis de ambiente da raiz do projeto.
 
@@ -88,9 +90,20 @@ Para encerrar os serviços preservando os dados:
 docker compose down
 ```
 
+## Testes e build
+
+Depois de preparar os arquivos de ambiente e diretórios descritos acima, execute os testes de backend em um container separado:
+
+```sh
+docker compose build tests
+docker compose run --rm --no-deps tests
+```
+
+A suíte em `backend/tests/Feature/AppointmentTest.php` possui 14 testes e usa SQLite em memória, configurados em `backend/phpunit.xml`, com dados fictícios e chave exclusiva de teste. Não depende dos registros do PostgreSQL da aplicação e não substitui uma verificação de integração com esse banco.
+
 ## API e contratos
 
-Base local: `/api/v1`. Envie `Accept: application/json` e, nas operações com corpo de requisição: `Content-Type: application/json`.
+Base local: `/api/v1`. 
 
 As rotas usam o nome `appointments`, correspondente a solicitações de atendimento. 
 
@@ -111,9 +124,9 @@ A listagem aceita `status`, `categoria`, `prioridade` e `page`. O resumo aceita 
 
 ### Documentação com OpenAPI
 
-A especificação OpenAPI 3.0.3 está em [`docs/openapi.yaml`](docs/openapi.yaml). Ela descreve os endpoints principais da API e suas funcionalidades, e também permite que o usuário teste cada um dos endpoints.
+A especificação OpenAPI está em [`backend/docs/openapi.yaml`](backend/docs/openapi.yaml). Ela descreve os endpoints principais da API e suas funcionalidades, e também permite que o usuário execute cada um dos endpoints.
 
-Com o backend em execução, acesse [http://localhost:8000/docs](http://localhost:8000/docs) para consultar a documentação no Swagger UI e testar as operações da API. A interface carrega os recursos visuais de uma versão fixa do Swagger UI pela internet e lê a especificação local pelo endpoint `/docs/openapi.yaml`. O arquivo é versionado e deve ser atualizado quando o contrato mudar.
+Com o backend em execução, acesse [http://localhost:8000/api/v1/docs](http://localhost:8000/api/v1/docs) para consultar a documentação no Swagger UI e testar as operações da API. A interface carrega os recursos visuais de uma versão fixa do Swagger UI pela internet e lê a especificação local pelo endpoint `/api/v1/docs/openapi.yaml`. O arquivo é versionado e deve ser atualizado quando o contrato mudar.
 
 ## Arquitetura e organização
 
@@ -141,19 +154,11 @@ frontend/src/
 - **Backend define o status inicial de uma solicitação** o Backend faz a atribuição manual do status de uma solicitação nova para RECEBIDA em vez do front-end.
 - **Serviço injetado no controller:** `AppointmentService` reúne regras reutilizáveis; o controller coordena requisições e respostas. O status inicial ainda é definido no controller.
 - **Frontend separado da persistência:** `services/appointments.ts` centraliza o acesso à API, e `useAppointments` coordena estado, filtros e operações. As páginas e os componentes apresentam esses dados.
-- **Arquitetura em Camadas no Backend** O Backend utiliza uma arquitetura em camadas com fluxo Controller -> Service -> Providers, para separação de responsabilidades e auxiliar, também, no debug de métodos separadamente.
+- **Arquitetura em Camadas no Backend** O Backend utiliza uma arquitetura em camadas com fluxo Controller -> Service -> Models, um padrão bem comum nas aplicações de Laravel que ajuda bastante na separação de responsabilidades e debug de cada módulo separadamente.
 
+O fluxo principal da aplicação:
+  Requisição HTTP -> Routes -> Controller -> Services -> Models -> PostgreSQL
 
-## Testes e build
-
-Depois de preparar os arquivos de ambiente e diretórios descritos acima, execute os testes de backend em um container separado:
-
-```sh
-docker compose build tests
-docker compose run --rm --no-deps tests
-```
-
-A suíte em `backend/tests/Feature/AppointmentTest.php` possui 14 testes e usa SQLite em memória, configurados em `backend/phpunit.xml`, com dados fictícios e chave exclusiva de teste. Não depende dos registros do PostgreSQL da aplicação e não substitui uma verificação de integração com esse banco.
 
 
 ## Uso de inteligência artificial
