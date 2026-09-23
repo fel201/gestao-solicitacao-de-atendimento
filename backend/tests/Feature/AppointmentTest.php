@@ -85,6 +85,64 @@ class AppointmentTest extends TestCase
             ]);
     }
 
+    public function test_accepts_a_255_character_name_and_rejects_a_longer_name(): void
+    {
+        $payload = [
+            'nome_solicitante' => str_repeat('A', 255),
+            'categoria' => 'CONSULTA',
+            'prioridade' => 'MEDIA',
+            'descricao' => 'Solicitação fictícia.',
+        ];
+
+        $this->postJson('/api/v1/appointments', $payload)
+            ->assertCreated()
+            ->assertJsonPath('nome_solicitante', $payload['nome_solicitante']);
+
+        $payload['nome_solicitante'] .= 'B';
+
+        $this->postJson('/api/v1/appointments', $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('nome_solicitante')
+            ->assertJsonPath('errors.nome_solicitante.0', 'O nome do solicitante deve ter no máximo 255 caracteres.');
+
+        $this->assertDatabaseCount('atendimentos', 1);
+    }
+
+    public function test_rejects_non_text_creation_fields_before_persistence(): void
+    {
+        $this->postJson('/api/v1/appointments', [
+            'nome_solicitante' => ['nome' => 'Pessoa Fictícia'],
+            'categoria' => 'CONSULTA',
+            'prioridade' => 'URGENTE',
+            'descricao' => ['texto' => 'Solicitação fictícia.'],
+            'justificativa_prioridade' => ['texto' => 'Urgência fictícia.'],
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'nome_solicitante',
+                'descricao',
+                'justificativa_prioridade',
+            ])
+            ->assertJsonPath('errors.nome_solicitante.0', 'O nome do solicitante deve ser um texto.')
+            ->assertJsonPath('errors.descricao.0', 'A descrição deve ser um texto.')
+            ->assertJsonPath('errors.justificativa_prioridade.0', 'A justificativa da prioridade deve ser um texto.');
+
+        $this->assertDatabaseCount('atendimentos', 0);
+    }
+
+    public function test_rejects_a_non_text_optional_justification(): void
+    {
+        $this->postJson('/api/v1/appointments', [
+            'nome_solicitante' => 'Pessoa Fictícia',
+            'categoria' => 'CONSULTA',
+            'prioridade' => 'MEDIA',
+            'descricao' => 'Solicitação fictícia.',
+            'justificativa_prioridade' => ['texto' => 'Justificativa inválida.'],
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('justificativa_prioridade');
+
+        $this->assertDatabaseCount('atendimentos', 0);
+    }
+
     public function test_does_not_expose_database_details_when_persistence_fails(): void
     {
         config(['app.debug' => true]);

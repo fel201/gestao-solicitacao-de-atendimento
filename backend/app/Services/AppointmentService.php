@@ -34,37 +34,6 @@ class AppointmentService
         return 'APT-' . strtoupper(Str::random(10));
     }
 
-    public function validateCreation(array $data): array
-    {
-        $errors = [];
-
-        if (empty($data['nome_solicitante'] ?? '')) {
-            $errors['nome_solicitante'] = 'O nome do solicitante é obrigatório.';
-        }
-
-        $category = $data['categoria'] ?? null;
-        if (!in_array($category, self::VALID_CATEGORIES, true)) {
-            $errors['categoria'] = 'Categoria inválida.';
-        }
-
-        $priority = $data['prioridade'] ?? null;
-        if (!in_array($priority, self::VALID_PRIORITIES, true)) {
-            $errors['prioridade'] = 'Prioridade inválida.';
-        }
-
-        $description = $data['descricao'] ?? '';
-        if (empty($description)) {
-            $errors['descricao'] = 'A descrição é obrigatória.';
-        }
-
-        $priorityJustification = $data['justificativa_prioridade'] ?? '';
-        if (($priority ?? null) === 'URGENTE' && empty($priorityJustification)) {
-            $errors['justificativa_prioridade'] = 'A justificativa da prioridade urgente é obrigatória.';
-        }
-
-        return $errors;
-    }
-
     public function validateTransition(string $currentStatus, string $newStatus): bool
     {
         if ($currentStatus === $newStatus) {

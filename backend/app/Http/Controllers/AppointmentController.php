@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreAppointmentRequest;
 use App\Models\Appointment;
 use App\Services\AppointmentService;
 use Illuminate\Http\JsonResponse;
@@ -58,17 +59,9 @@ class AppointmentController extends Controller
         return response()->json($appointment);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreAppointmentRequest $request): JsonResponse
     {
-        $data = $request->all();
-
-        $errors = $this->appointmentService->validateCreation($data);
-
-        if (!empty($errors)) {
-            throw ValidationException::withMessages($errors);
-        }
-
-        $appointment = $this->appointmentService->create($data);
+        $appointment = $this->appointmentService->create($request->validated());
 
         return response()->json($appointment, 201);
     }

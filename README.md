@@ -22,7 +22,7 @@ O cliente HTTP utiliza `fetch`, nativo do navegador. React Router atende à nave
 
 ## Funcionalidades implementadas
 
-- Cadastro com nome, categoria, prioridade, descrição e justificativa de urgência.
+- Cadastro com nome, categoria, prioridade, descrição e justificativa de urgência, validando tipos e o limite de 255 caracteres do nome antes da persistência.
 - Protocolo automático no formato `APT-` seguido de dez caracteres alfanuméricos, com restrição de unicidade no banco.
 - Listagem com 15 registros por página e filtros combináveis por status, categoria e prioridade.
 - Resumo por status considerando todos os registros que correspondem aos filtros, independentemente da página.
@@ -99,7 +99,7 @@ docker compose build tests
 docker compose run --rm --no-deps tests
 ```
 
-A suíte em `backend/tests/Feature/AppointmentTest.php` possui 14 testes e usa SQLite em memória, configurados em `backend/phpunit.xml`, com dados fictícios e chave exclusiva de teste. Não depende dos registros do PostgreSQL da aplicação e não substitui uma verificação de integração com esse banco.
+A suíte em `backend/tests/Feature/AppointmentTest.php` possui 15 testes e usa SQLite em memória, configurados em `backend/phpunit.xml`, com dados fictícios e chave exclusiva de teste. Não depende dos registros do PostgreSQL da aplicação e não substitui uma verificação de integração com esse banco.
 
 Os testes do frontend ficam próximos aos módulos que verificam, dentro de `frontend/src`, e utilizam Vitest, React Testing Library e jsdom. Para executá-los uma vez:
 
