@@ -64,13 +64,12 @@ class AppointmentController extends Controller
 
         $errors = $this->appointmentService->validateCreation($data);
 
-        // define o campo de status na variável data para RECEBIDO
-
         if (!empty($errors)) {
             throw ValidationException::withMessages($errors);
         }
-        $data['status'] = 'RECEBIDA';
+
         $appointment = $this->appointmentService->create($data);
+
         return response()->json($appointment, 201);
     }
 

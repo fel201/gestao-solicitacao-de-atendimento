@@ -7,6 +7,8 @@ use Illuminate\Support\Str;
 
 class AppointmentService
 {
+    public const INITIAL_STATUS = 'RECEBIDA';
+
     public const VALID_STATUSES = [
         'RECEBIDA',
         'EM_ANALISE',
@@ -60,10 +62,6 @@ class AppointmentService
             $errors['justificativa_prioridade'] = 'A justificativa da prioridade urgente é obrigatória.';
         }
 
-        if (isset($data['status']) && !in_array($data['status'], self::VALID_STATUSES, true)) {
-            $errors['status'] = 'Status inválido.';
-        }
-
         return $errors;
     }
 
@@ -85,7 +83,7 @@ class AppointmentService
         $appointment->nome_solicitante = $data['nome_solicitante'];
         $appointment->categoria = $data['categoria'];
         $appointment->prioridade = $data['prioridade'];
-        $appointment->status = $data['status'];
+        $appointment->status = self::INITIAL_STATUS;
         $appointment->descricao = $data['descricao'];
         $appointment->justificativa_prioridade = $data['justificativa_prioridade'] ?? null;
         $appointment->save();

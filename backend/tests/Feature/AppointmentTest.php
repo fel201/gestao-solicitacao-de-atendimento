@@ -19,13 +19,14 @@ class AppointmentTest extends TestCase
             ->assertExactJson(['status' => 'ok']);
     }
 
-    public function test_creates_an_appointment_with_the_received_status(): void
+    public function test_creation_ignores_client_status_and_uses_received_status(): void
     {
         $payload = [
             'nome_solicitante' => 'Maria da Silva',
             'categoria' => 'CONSULTA',
             'prioridade' => 'MEDIA',
             'descricao' => 'Preciso de uma consulta de rotina.',
+            'status' => 'CONCLUIDA',
         ];
 
         $response = $this->postJson('/api/v1/appointments', $payload);
