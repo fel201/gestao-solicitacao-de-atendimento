@@ -6,12 +6,34 @@ frontend/npm-debug.log*
 
 # PHP / Laravel
 backend/vendor/
-backend/.env
-backend/bootstrap/cache/
-backend/storage/
 backend/public/storage/
 backend/public/hot
 backend/.phpunit.result.cache
+backend/.phpunit.cache/
+
+# Laravel: ignora o conteúdo, mantém a estrutura de pastas
+backend/bootstrap/cache/*
+!backend/bootstrap/cache/.gitkeep
+
+backend/storage/logs/*
+!backend/storage/logs/.gitkeep
+
+backend/storage/framework/cache/data/*
+!backend/storage/framework/cache/data/.gitkeep
+
+backend/storage/framework/sessions/*
+!backend/storage/framework/sessions/.gitkeep
+
+backend/storage/framework/views/*
+!backend/storage/framework/views/.gitkeep
+
+backend/storage/framework/testing/*
+!backend/storage/framework/testing/.gitkeep
+
+backend/storage/app/public/*
+!backend/storage/app/public/.gitkeep
+
+backend/storage/*.key
 
 # Env files
 .env
@@ -22,6 +44,4 @@ backend/.phpunit.result.cache
 .DS_Store
 Thumbs.db
 .vscode/
-
-# SQLite
-database.sqlite
+.idea/
