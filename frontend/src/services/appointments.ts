@@ -92,11 +92,11 @@ export function listAppointments(filters: AppointmentFilters) {
   if (filters.status) params.set("status", filters.status);
   if (filters.categoria) params.set("categoria", filters.categoria);
   if (filters.prioridade) params.set("prioridade", filters.prioridade);
-  if (filters.page) params.set("page", String(filters.page));
+  if (filters.pagina) params.set("pagina", String(filters.pagina));
 
   const query = params.toString();
   return request<PaginatedResponse<Appointment>>(
-    `/appointments${query ? `?${query}` : ""}`,
+    `/solicitacoes${query ? `?${query}` : ""}`,
   );
 }
 
@@ -108,16 +108,16 @@ export function getAppointmentSummary(filters: AppointmentFilters) {
 
   const query = params.toString();
   return request<Array<{ status: Status; total: number }>>(
-    `/appointments/summary${query ? `?${query}` : ""}`,
+    `/solicitacoes/resumo${query ? `?${query}` : ""}`,
   );
 }
 
 export function getAppointment(id: number) {
-  return request<Appointment>(`/appointments/${id}`);
+  return request<Appointment>(`/solicitacoes/${id}`);
 }
 
 export function createAppointment(form: AppointmentForm) {
-  return request<Appointment>("/appointments", {
+  return request<Appointment>("/solicitacoes", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(form),
@@ -125,7 +125,7 @@ export function createAppointment(form: AppointmentForm) {
 }
 
 export function updateAppointmentStatus(id: number, status: Status) {
-  return request<Appointment>(`/appointments/${id}/status`, {
+  return request<Appointment>(`/solicitacoes/${id}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status }),

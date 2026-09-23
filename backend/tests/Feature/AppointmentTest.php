@@ -29,7 +29,7 @@ class AppointmentTest extends TestCase
             'status' => 'CONCLUIDA',
         ];
 
-        $response = $this->postJson('/api/v1/appointments', $payload);
+        $response = $this->postJson('/api/v1/solicitacoes', $payload);
 
         $response->assertCreated()
             ->assertJsonPath('nome_solicitante', $payload['nome_solicitante'])
@@ -47,7 +47,7 @@ class AppointmentTest extends TestCase
 
     public function test_requires_a_priority_justification_for_an_urgent_appointment(): void
     {
-        $this->postJson('/api/v1/appointments', [
+        $this->postJson('/api/v1/solicitacoes', [
             'nome_solicitante' => 'João Souza',
             'categoria' => 'EXAME',
             'prioridade' => 'URGENTE',
@@ -58,7 +58,7 @@ class AppointmentTest extends TestCase
 
     public function test_creates_an_urgent_appointment_when_its_justification_is_informed(): void
     {
-        $this->postJson('/api/v1/appointments', [
+        $this->postJson('/api/v1/solicitacoes', [
             'nome_solicitante' => 'Carla Santos',
             'categoria' => 'EXAME',
             'prioridade' => 'URGENTE',
@@ -71,7 +71,7 @@ class AppointmentTest extends TestCase
 
     public function test_validates_required_and_enumerated_creation_fields(): void
     {
-        $this->postJson('/api/v1/appointments', [
+        $this->postJson('/api/v1/solicitacoes', [
             'nome_solicitante' => '',
             'categoria' => 'INEXISTENTE',
             'prioridade' => 'CRITICA',
@@ -94,13 +94,13 @@ class AppointmentTest extends TestCase
             'descricao' => 'Solicitação fictícia.',
         ];
 
-        $this->postJson('/api/v1/appointments', $payload)
+        $this->postJson('/api/v1/solicitacoes', $payload)
             ->assertCreated()
             ->assertJsonPath('nome_solicitante', $payload['nome_solicitante']);
 
         $payload['nome_solicitante'] .= 'B';
 
-        $this->postJson('/api/v1/appointments', $payload)
+        $this->postJson('/api/v1/solicitacoes', $payload)
             ->assertUnprocessable()
             ->assertJsonValidationErrors('nome_solicitante')
             ->assertJsonPath('errors.nome_solicitante.0', 'O nome do solicitante deve ter no máximo 255 caracteres.');
@@ -110,7 +110,7 @@ class AppointmentTest extends TestCase
 
     public function test_rejects_non_text_creation_fields_before_persistence(): void
     {
-        $this->postJson('/api/v1/appointments', [
+        $this->postJson('/api/v1/solicitacoes', [
             'nome_solicitante' => ['nome' => 'Pessoa Fictícia'],
             'categoria' => 'CONSULTA',
             'prioridade' => 'URGENTE',
@@ -131,7 +131,7 @@ class AppointmentTest extends TestCase
 
     public function test_rejects_a_non_text_optional_justification(): void
     {
-        $this->postJson('/api/v1/appointments', [
+        $this->postJson('/api/v1/solicitacoes', [
             'nome_solicitante' => 'Pessoa Fictícia',
             'categoria' => 'CONSULTA',
             'prioridade' => 'MEDIA',
@@ -148,7 +148,7 @@ class AppointmentTest extends TestCase
         config(['app.debug' => true]);
         Schema::drop('atendimentos');
 
-        $response = $this->postJson('/api/v1/appointments', [
+        $response = $this->postJson('/api/v1/solicitacoes', [
             'nome_solicitante' => 'Pessoa Fictícia',
             'categoria' => 'CONSULTA',
             'prioridade' => 'MEDIA',
@@ -182,13 +182,16 @@ class AppointmentTest extends TestCase
             'status' => 'EM_ANALISE',
         ]);
 
-        $this->getJson('/api/v1/appointments?status=RECEBIDA&categoria=CONSULTA&prioridade=ALTA')
+        $this->getJson('/api/v1/solicitacoes?status=RECEBIDA&categoria=CONSULTA&prioridade=ALTA')
             ->assertOk()
             ->assertJsonPath('total', 1)
-            ->assertJsonPath('data.0.id', $matching->id)
-            ->assertJsonPath('data.0.descricao', $matching->descricao)
+            ->assertJsonPath('pagina_atual', 1)
+            ->assertJsonPath('ultima_pagina', 1)
+            ->assertJsonPath('itens_por_pagina', 15)
+            ->assertJsonPath('dados.0.id', $matching->id)
+            ->assertJsonPath('dados.0.descricao', $matching->descricao)
             ->assertJsonStructure([
-                'data' => [[
+                'dados' => [[
                     'id',
                     'protocolo',
                     'nome_solicitante',
@@ -203,13 +206,38 @@ class AppointmentTest extends TestCase
             ]);
     }
 
+    public function test_paginates_with_portuguese_fields_and_query_parameter(): void
+    {
+        for ($index = 0; $index < 16; $index++) {
+            $this->createAppointment();
+        }
+
+        $response = $this->getJson('/api/v1/solicitacoes?pagina=2');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'dados')
+            ->assertJsonPath('pagina_atual', 2)
+            ->assertJsonPath('ultima_pagina', 2)
+            ->assertJsonPath('itens_por_pagina', 15)
+            ->assertJsonPath('total', 16);
+
+        $this->assertSame([
+            'dados',
+            'pagina_atual',
+            'ultima_pagina',
+            'itens_por_pagina',
+            'total',
+        ], array_keys($response->json()));
+    }
+
     public function test_returns_a_summary_for_all_appointments_matching_the_filters(): void
     {
         $this->createAppointment(['categoria' => 'CONSULTA', 'status' => 'RECEBIDA']);
         $this->createAppointment(['categoria' => 'CONSULTA', 'status' => 'EM_ANALISE']);
         $this->createAppointment(['categoria' => 'EXAME', 'status' => 'RECEBIDA']);
 
-        $this->getJson('/api/v1/appointments/summary?categoria=CONSULTA')
+        $this->getJson('/api/v1/solicitacoes/resumo?categoria=CONSULTA')
             ->assertOk()
             ->assertExactJson([
                 ['status' => 'EM_ANALISE', 'total' => 1],
@@ -221,12 +249,12 @@ class AppointmentTest extends TestCase
     {
         $appointment = $this->createAppointment();
 
-        $this->getJson("/api/v1/appointments/{$appointment->id}")
+        $this->getJson("/api/v1/solicitacoes/{$appointment->id}")
             ->assertOk()
             ->assertJsonPath('id', $appointment->id)
             ->assertJsonPath('justificativa_prioridade', $appointment->justificativa_prioridade);
 
-        $this->getJson('/api/v1/appointments/99999')
+        $this->getJson('/api/v1/solicitacoes/99999')
             ->assertNotFound()
             ->assertExactJson([
                 'message' => 'O recurso solicitado não foi encontrado.',
@@ -238,7 +266,7 @@ class AppointmentTest extends TestCase
     {
         $appointment = $this->createAppointment(['status' => 'RECEBIDA']);
 
-        $this->patchJson("/api/v1/appointments/{$appointment->id}/status", [
+        $this->patchJson("/api/v1/solicitacoes/{$appointment->id}/status", [
             'status' => 'EM_ANALISE',
         ])->assertOk()
             ->assertJsonPath('status', 'EM_ANALISE');
@@ -253,12 +281,12 @@ class AppointmentTest extends TestCase
     {
         $appointment = $this->createAppointment(['status' => 'RECEBIDA']);
 
-        $this->patchJson("/api/v1/appointments/{$appointment->id}/status", [
+        $this->patchJson("/api/v1/solicitacoes/{$appointment->id}/status", [
             'status' => 'CONCLUIDA',
         ])->assertUnprocessable()
             ->assertJsonPath('message', 'Transição de status inválida.');
 
-        $this->patchJson("/api/v1/appointments/{$appointment->id}/status", [
+        $this->patchJson("/api/v1/solicitacoes/{$appointment->id}/status", [
             'status' => 'RECEBIDA',
         ])->assertUnprocessable()
             ->assertJsonPath('message', 'Transição de status inválida.');
@@ -268,21 +296,21 @@ class AppointmentTest extends TestCase
     {
         $appointment = $this->createAppointment(['status' => 'CONCLUIDA']);
 
-        $this->patchJson("/api/v1/appointments/{$appointment->id}/status", [
+        $this->patchJson("/api/v1/solicitacoes/{$appointment->id}/status", [
             'status' => 'CANCELADA',
         ])->assertUnprocessable()
             ->assertJsonPath('message', 'Atendimento finalizado não pode ter status alterado.');
 
-        $this->patchJson("/api/v1/appointments/{$appointment->id}/status", [
+        $this->patchJson("/api/v1/solicitacoes/{$appointment->id}/status", [
             'status' => 'INEXISTENTE',
         ])->assertUnprocessable()
             ->assertJsonValidationErrors('status');
 
-        $this->patchJson("/api/v1/appointments/{$appointment->id}/status", [])
+        $this->patchJson("/api/v1/solicitacoes/{$appointment->id}/status", [])
             ->assertUnprocessable()
             ->assertJsonValidationErrors('status');
 
-        $this->patchJson('/api/v1/appointments/99999/status', [
+        $this->patchJson('/api/v1/solicitacoes/99999/status', [
             'status' => 'EM_ANALISE',
         ])->assertNotFound();
     }

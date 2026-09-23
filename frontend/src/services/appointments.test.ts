@@ -3,6 +3,7 @@ import type { AppointmentForm } from "../interfaces/Appointment";
 import {
   createAppointment,
   getAppointment,
+  getAppointmentSummary,
   listAppointments,
   updateAppointmentStatus,
 } from "./appointments";
@@ -25,23 +26,44 @@ describe("appointments service", () => {
   it("envia os filtros preenchidos na query da listagem", async () => {
     fetchMock.mockResolvedValue(
       jsonResponse({
-        data: [],
-        current_page: 2,
-        last_page: 2,
-        per_page: 15,
+        dados: [],
+        pagina_atual: 2,
+        ultima_pagina: 2,
+        itens_por_pagina: 15,
         total: 16,
       }),
     );
 
-    await listAppointments({
+    const page = await listAppointments({
       status: "RECEBIDA",
       categoria: "EXAME",
       prioridade: "ALTA",
-      page: 2,
+      pagina: 2,
+    });
+
+    expect(page).toEqual({
+      dados: [],
+      pagina_atual: 2,
+      ultima_pagina: 2,
+      itens_por_pagina: 15,
+      total: 16,
     });
 
     expect(fetchMock).toHaveBeenCalledWith(
-      `${API_URL}/appointments?status=RECEBIDA&categoria=EXAME&prioridade=ALTA&page=2`,
+      `${API_URL}/solicitacoes?status=RECEBIDA&categoria=EXAME&prioridade=ALTA&pagina=2`,
+      expect.objectContaining({
+        headers: { Accept: "application/json" },
+      }),
+    );
+  });
+
+  it("consulta o resumo na rota em português", async () => {
+    fetchMock.mockResolvedValue(jsonResponse([]));
+
+    await getAppointmentSummary({ categoria: "CONSULTA" });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${API_URL}/solicitacoes/resumo?categoria=CONSULTA`,
       expect.objectContaining({
         headers: { Accept: "application/json" },
       }),
@@ -61,7 +83,7 @@ describe("appointments service", () => {
     await createAppointment(form);
 
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe(`${API_URL}/appointments`);
+    expect(url).toBe(`${API_URL}/solicitacoes`);
     expect(init.method).toBe("POST");
     expect(init.headers).toEqual({
       Accept: "application/json",
@@ -82,7 +104,7 @@ describe("appointments service", () => {
     await updateAppointmentStatus(15, "AGENDADA");
 
     expect(fetchMock).toHaveBeenCalledWith(
-      `${API_URL}/appointments/15/status`,
+      `${API_URL}/solicitacoes/15/status`,
       expect.objectContaining({
         method: "PATCH",
         body: JSON.stringify({ status: "AGENDADA" }),

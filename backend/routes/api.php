@@ -11,11 +11,11 @@ Route::prefix('v1')->group(function () {
 
         return response()->json(['status' => 'ok']);
     });
-    Route::get('/appointments', [AppointmentController::class, 'index']);
-    Route::get('/appointments/summary', [AppointmentController::class, 'summary']);
-    Route::get('/appointments/{id}', [AppointmentController::class, 'show']);
-    Route::post('/appointments', [AppointmentController::class, 'store']);
-    Route::patch('/appointments/{id}/status', [AppointmentController::class, 'updateStatus']);
+    Route::get('/solicitacoes', [AppointmentController::class, 'index']);
+    Route::get('/solicitacoes/resumo', [AppointmentController::class, 'summary']);
+    Route::get('/solicitacoes/{id}', [AppointmentController::class, 'show']);
+    Route::post('/solicitacoes', [AppointmentController::class, 'store']);
+    Route::patch('/solicitacoes/{id}/status', [AppointmentController::class, 'updateStatus']);
 });
 
 Route::fallback(fn (Request $request) => response()->json([

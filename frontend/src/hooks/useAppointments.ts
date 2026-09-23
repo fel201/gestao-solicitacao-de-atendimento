@@ -56,13 +56,13 @@ export default function useAppointments() {
           prioridade: appliedPriorityFilter || undefined,
         };
         const [data, summaryData] = await Promise.all([
-          listAppointments({ ...filters, page }),
+          listAppointments({ ...filters, pagina: page }),
           getAppointmentSummary(filters),
         ]);
 
-        setAppointments(data.data);
-        setCurrentPage(data.current_page);
-        setLastPage(data.last_page);
+        setAppointments(data.dados);
+        setCurrentPage(data.pagina_atual);
+        setLastPage(data.ultima_pagina);
         setTotal(data.total);
         setSummary(summaryData);
       } catch (err) {

@@ -3,16 +3,21 @@ info:
   title: API de Solicitações de Atendimento
   version: 1.0.0
   description: |
-    Utilize apenas dados fictícios. Requisições e respostas usam JSON;
-    envie Accept: application/json e Content-Type: application/json nos corpos.
+    API para cadastrar, consultar e acompanhar solicitações de atendimento.
+    Utilize apenas dados fictícios.
 
-    A criação sempre define RECEBIDA. Transições permitidas:
-    RECEBIDA -> EM_ANALISE ou CANCELADA;
-    EM_ANALISE -> AGENDADA ou CANCELADA;
-    AGENDADA -> CONCLUIDA ou CANCELADA.
-    CONCLUIDA e CANCELADA são finais. Repetir o status atual é inválido.
+    ### Formato das requisições
+    As respostas são em JSON. Envie `Accept: application/json` em todas as
+    requisições e `Content-Type: application/json` quando houver um corpo JSON.
 
-    Este documento descreve o contrato esperado para os campos de texto.
+    ### Fluxo de status
+    Toda solicitação é criada com o status `RECEBIDA`. As mudanças permitidas são:
+
+    - `RECEBIDA` → `EM_ANALISE` ou `CANCELADA`;
+    - `EM_ANALISE` → `AGENDADA` ou `CANCELADA`;
+    - `AGENDADA` → `CONCLUIDA` ou `CANCELADA`.
+
+    `CONCLUIDA` e `CANCELADA` são status finais. Não é permitido repetir o status atual.
 servers:
   - url: http://localhost:8000/api/v1
     description: Ambiente local com Docker Compose
@@ -45,7 +50,7 @@ paths:
                 status: ok
         '503':
           $ref: '#/components/responses/DatabaseUnavailable'
-  /appointments:
+  /solicitacoes:
     get:
       tags: [Solicitações]
       operationId: listAppointments
@@ -60,7 +65,7 @@ paths:
         - $ref: '#/components/parameters/StatusFilter'
         - $ref: '#/components/parameters/CategoryFilter'
         - $ref: '#/components/parameters/PriorityFilter'
-        - name: page
+        - name: pagina
           in: query
           description: Número da página. Valores inválidos são normalizados pelo paginador Laravel.
           schema:
@@ -130,7 +135,7 @@ paths:
           $ref: '#/components/responses/InternalError'
         '503':
           $ref: '#/components/responses/DatabaseUnavailable'
-  /appointments/summary:
+  /solicitacoes/resumo:
     get:
       tags: [Solicitações]
       operationId: getAppointmentSummary
@@ -168,7 +173,7 @@ paths:
           $ref: '#/components/responses/InternalError'
         '503':
           $ref: '#/components/responses/DatabaseUnavailable'
-  /appointments/{id}:
+  /solicitacoes/{id}:
     parameters:
       - $ref: '#/components/parameters/AppointmentId'
     get:
@@ -188,7 +193,7 @@ paths:
           $ref: '#/components/responses/InternalError'
         '503':
           $ref: '#/components/responses/DatabaseUnavailable'
-  /appointments/{id}/status:
+  /solicitacoes/{id}/status:
     parameters:
       - $ref: '#/components/parameters/AppointmentId'
     patch:
@@ -418,67 +423,28 @@ components:
         data_atualizacao: '2026-09-21T12:00:00.000000Z'
     AppointmentPage:
       type: object
-      required: [current_page, data, first_page_url, from, last_page, last_page_url, links, next_page_url, path, per_page, prev_page_url, to, total]
+      required: [dados, pagina_atual, ultima_pagina, itens_por_pagina, total]
       properties:
-        current_page:
-          type: integer
-          minimum: 1
-        data:
+        dados:
           type: array
           maxItems: 15
           items:
             $ref: '#/components/schemas/Appointment'
-        first_page_url:
-          type: string
-          format: uri
-        from:
-          type: integer
-          nullable: true
-          description: Posição inicial, ou null quando a página está vazia.
-        last_page:
+        pagina_atual:
           type: integer
           minimum: 1
-        last_page_url:
-          type: string
-          format: uri
-        links:
-          type: array
-          items:
-            type: object
-            required: [url, label, active]
-            properties:
-              url:
-                type: string
-                format: uri
-                nullable: true
-              label:
-                type: string
-                description: Rótulo do Laravel; pode conter entidades HTML.
-              active:
-                type: boolean
-        next_page_url:
-          type: string
-          format: uri
-          nullable: true
-        path:
-          type: string
-          format: uri
-        per_page:
+        ultima_pagina:
+          type: integer
+          minimum: 1
+        itens_por_pagina:
           type: integer
           enum: [15]
-        prev_page_url:
-          type: string
-          format: uri
-          nullable: true
-        to:
-          type: integer
-          nullable: true
         total:
           type: integer
           minimum: 0
       description: |
-        Paginação Laravel. Os links gerados não preservam automaticamente os
-        filtros nesta implementação; reenvie os filtros junto do parâmetro page.
+        Resposta de paginação com campos em português. Para navegar, reenvie
+        os filtros junto do parâmetro pagina.
     MessageError:
       type: object
       required: [message]

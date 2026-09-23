@@ -19,9 +19,15 @@ class AppointmentController extends Controller
     {
         $appointments = $this->filteredAppointments($request)
             ->orderByDesc('data_criacao')
-            ->paginate(15);
+            ->paginate(15, ['*'], 'pagina');
 
-        return response()->json($appointments);
+        return response()->json([
+            'dados' => $appointments->items(),
+            'pagina_atual' => $appointments->currentPage(),
+            'ultima_pagina' => $appointments->lastPage(),
+            'itens_por_pagina' => $appointments->perPage(),
+            'total' => $appointments->total(),
+        ]);
     }
 
     public function summary(Request $request): JsonResponse

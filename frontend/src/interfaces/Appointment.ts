@@ -24,16 +24,16 @@ export type AppointmentFilters = {
   status?: Status;
   categoria?: Category;
   prioridade?: Priority;
-  page?: number;
+  pagina?: number;
 };
 
 export type FilterValue<T> = T | "";
 
 export type PaginatedResponse<T> = {
-  data: T[];
-  current_page: number;
-  last_page: number;
-  per_page: number;
+  dados: T[];
+  pagina_atual: number;
+  ultima_pagina: number;
+  itens_por_pagina: number;
   total: number;
 };
 
