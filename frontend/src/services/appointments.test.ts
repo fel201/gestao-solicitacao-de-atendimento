@@ -48,14 +48,14 @@ describe("appointments service", () => {
     );
   });
 
-  it("não envia justificativa para uma solicitação que não é urgente", async () => {
+  it("envia a justificativa opcional mesmo quando a prioridade não é urgente", async () => {
     fetchMock.mockResolvedValue(jsonResponse({ id: 1 }, 201));
     const form: AppointmentForm = {
       nome_solicitante: "Maria Silva",
       categoria: "CONSULTA",
       prioridade: "MEDIA",
       descricao: "Consulta de rotina.",
-      justificativa_prioridade: "Este texto não deve ser enviado.",
+      justificativa_prioridade: "Paciente com dificuldade de locomoção.",
     };
 
     await createAppointment(form);
@@ -72,6 +72,7 @@ describe("appointments service", () => {
       categoria: "CONSULTA",
       prioridade: "MEDIA",
       descricao: "Consulta de rotina.",
+      justificativa_prioridade: "Paciente com dificuldade de locomoção.",
     });
   });
 

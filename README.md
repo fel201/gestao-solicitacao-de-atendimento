@@ -101,6 +101,20 @@ docker compose run --rm --no-deps tests
 
 A suíte em `backend/tests/Feature/AppointmentTest.php` possui 14 testes e usa SQLite em memória, configurados em `backend/phpunit.xml`, com dados fictícios e chave exclusiva de teste. Não depende dos registros do PostgreSQL da aplicação e não substitui uma verificação de integração com esse banco.
 
+Os testes do frontend ficam próximos aos módulos que verificam, dentro de `frontend/src`, e utilizam Vitest, React Testing Library e jsdom. Para executá-los uma vez:
+
+```sh
+cd frontend
+npm install
+npm test
+```
+
+Durante o desenvolvimento, use o modo contínuo, que executa novamente os testes afetados após cada alteração:
+
+```sh
+npm run test:watch
+```
+
 ## API e contratos
 
 Base local: `/api/v1`. 

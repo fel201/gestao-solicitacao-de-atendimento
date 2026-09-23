@@ -120,13 +120,7 @@ export function createAppointment(form: AppointmentForm) {
   return request<Appointment>("/appointments", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      ...form,
-      justificativa_prioridade:
-        form.prioridade === "URGENTE"
-          ? form.justificativa_prioridade
-          : undefined,
-    }),
+    body: JSON.stringify(form),
   });
 }
 
