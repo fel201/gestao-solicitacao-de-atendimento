@@ -14,7 +14,7 @@ class DocumentationController extends Controller
 
     public function specification(): BinaryFileResponse
     {
-        $specificationPath = base_path('../docs/openapi.yaml');
+        $specificationPath = base_path('docs/openapi.yaml');
 
         abort_unless(
             is_file($specificationPath),

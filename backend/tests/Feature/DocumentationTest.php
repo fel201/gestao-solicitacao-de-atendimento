@@ -8,15 +8,15 @@ class DocumentationTest extends TestCase
 {
     public function test_displays_the_swagger_ui_page(): void
     {
-        $this->get('/docs')
+        $this->get('/api/v1/docs')
             ->assertOk()
             ->assertSee('SwaggerUIBundle')
-            ->assertSee('docs\\/openapi.yaml', false);
+            ->assertSee('api\\/v1\\/docs\\/openapi.yaml', false);
     }
 
     public function test_serves_the_openapi_specification(): void
     {
-        $response = $this->get('/docs/openapi.yaml');
+        $response = $this->get('/api/v1/docs/openapi.yaml');
 
         $response
             ->assertOk()
