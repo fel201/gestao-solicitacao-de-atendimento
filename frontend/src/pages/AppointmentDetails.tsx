@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react";
 import type { Appointment, Status } from "../interfaces/Appointment";
 import AppointmentActions from "../components/appointment/AppointmentActions";
+import CategoryBadge from "../components/appointment/CategoryBadge";
 import PriorityBadge from "../components/appointment/PriorityBadge";
 import StatusBadge from "../components/appointment/StatusBadge";
-import DetailField from "../components/ui/DetailField";
+import Button from "../components/ui/Button";
 import Panel from "../components/ui/Panel";
 import { getAppointment } from "../services/appointments";
 import formatDate from "../utils/formatDate";
-import { categoryLabels } from "../constants/appointment";
+import {
+  nextStatuses,
+  priorityBorderClasses,
+} from "../constants/appointment";
 
 type AppointmentDetailsProps = {
   appointmentId: number;
@@ -66,95 +70,114 @@ export default function AppointmentDetails({
           <p className="font-medium">Não foi possível carregar a solicitação.</p>
           <p className="mt-1 text-sm">{error ?? "Solicitação não encontrada."}</p>
           <div className="mt-3 flex gap-3">
-            <button
-              type="button"
-              className="rounded-md bg-red-700 px-3 py-2 text-sm text-white hover:bg-red-800"
-              onClick={() => loadAppointment()}
-            >
+            <Button variant="primary" onClick={() => loadAppointment()}>
               Tentar novamente
-            </button>
-            <button
-              type="button"
-              className="rounded-md border border-[#536170] px-3 py-2 text-sm text-slate-200 hover:bg-[#2b323a]"
-              onClick={onBack}
-            >
+            </Button>
+            <Button variant="secondary" onClick={onBack}>
               Voltar
-            </button>
+            </Button>
           </div>
         </div>
       </Panel>
     );
   }
 
+  const hasAvailableActions = nextStatuses[appointment.status].length > 0;
+
   return (
-    <Panel className="overflow-hidden p-0">
-      <header className="border-b border-[#3f4b59] from-[#1b252d] to-[#161616] px-5 py-6 sm:px-8">
-        <button
-          type="button"
-          className="mb-7 text-sm font-medium text-cyan-100 hover:text-cyan-200"
-          onClick={onBack}
-        >
-          ← Voltar para solicitações
-        </button>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h2 className="mt-1 font-mono text-2xl font-semibold text-cyan-300">
-              Solicitação {appointment.protocolo}
-            </h2>
-          </div>
-          <StatusBadge status={appointment.status} className="w-fit text-sm" />
-        </div>
-      </header>
+    <div className="space-y-4">
+      <Button
+        variant="secondary"
+        className="px-3 py-1.5 text-cyan-100"
+        onClick={onBack}
+      >
+        <span aria-hidden="true">←</span> Voltar para solicitações
+      </Button>
 
-      <article className="mx-auto max-w-4xl px-5 py-7 sm:px-8 sm:py-9">
-        <p className="mt-3 text-lg font-medium text-slate-100">
+      <Panel
+        className={`overflow-hidden border-l-4 p-0 shadow-lg ${priorityBorderClasses[appointment.prioridade]}`}
+      >
+        <article>
+          <header className="bg-[#161616] px-5 py-6 sm:px-8 sm:py-8">
+            <div className="flex items-start justify-between gap-4">
+              <span className="break-all font-mono text-sm tracking-wide text-cyan-300">
+                {appointment.protocolo}
+              </span>
+              <StatusBadge status={appointment.status} className="shrink-0" />
+            </div>
+
+            <h2 className="mt-5 text-2xl font-semibold leading-tight text-slate-100 sm:text-3xl">
               {appointment.nome_solicitante}
-        </p>
-        <dl className="grid gap-3 sm:grid-cols-3">
-          <DetailField label="Categoria">
-            {categoryLabels[appointment.categoria]}
-          </DetailField>
-          <DetailField label="Prioridade">
-            <PriorityBadge priority={appointment.prioridade} />
-          </DetailField>
-          <DetailField label="Criada em">
-            {formatDate(appointment.data_criacao)}
-          </DetailField>
-        </dl>
+            </h2>
 
-        <section className="mt-9">
-          <h3 className="text-sm font-medium uppercase tracking-wide text-slate-400">
-            Descrição
-          </h3>
-          <p className="mt-3 whitespace-pre-wrap border-l-2 border-cyan-400/70 pl-4 text-base leading-7 text-slate-100">
-            {appointment.descricao}
-          </p>
-        </section>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <CategoryBadge category={appointment.categoria} />
+              <PriorityBadge priority={appointment.prioridade} showLabel />
+            </div>
 
-        <section className="mt-8 rounded-lg border border-amber-400/25 bg-amber-400/5 p-5">
-          <h3 className="text-sm font-medium text-amber-200">
-            Justificativa da prioridade
-          </h3>
-          <p className="mt-2 whitespace-pre-wrap leading-7 text-slate-200">
-            {appointment.justificativa_prioridade?.trim() ||
-              "Nenhuma justificativa informada."}
-          </p>
-        </section>
+            <div className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-400">
+              <span>
+                Criada em {formatDate(appointment.data_criacao)}
+              </span>
+              <span aria-hidden="true" className="text-slate-600">•</span>
+              <span>
+                Atualizada em {formatDate(appointment.data_atualizacao)}
+              </span>
+            </div>
+          </header>
 
-        <p className="mt-8 text-sm text-slate-400">
-          Última atualização: {formatDate(appointment.data_atualizacao)}
-        </p>
-      </article>
+          <div className="border-t border-[#3f4b59] bg-[#161616] px-5 py-7 sm:px-8 sm:py-9">
+            <section aria-labelledby="appointment-description-title">
+              <h3
+                id="appointment-description-title"
+                className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-200"
+              >
+                Descrição
+              </h3>
+              <p className="mt-4 max-w-4xl whitespace-pre-wrap text-base leading-8 text-slate-100 sm:text-lg">
+                {appointment.descricao}
+              </p>
+            </section>
 
-      <AppointmentActions
-        status={appointment.status}
-        appointmentId={appointment.id}
-        onUpdateStatus={async (id, status) => {
-          await onUpdateStatus(id, status);
-          await loadAppointment(false);
-        }}
-        className="flex flex-wrap justify-end gap-2 border-t border-[#3f4b59] bg-[#141414] px-5 py-4 sm:px-8"
-      />
-    </Panel>
+            <section className="mt-8 max-w-4xl border-l-2 border-amber-400/70 bg-amber-400/5 px-5 py-4">
+              <h3 className="text-sm font-medium text-amber-200">
+                Justificativa da prioridade
+              </h3>
+              <p className="mt-2 whitespace-pre-wrap leading-7 text-slate-300">
+                {appointment.justificativa_prioridade?.trim() ||
+                  "Nenhuma justificativa informada."}
+              </p>
+            </section>
+          </div>
+
+          <footer className="flex flex-col gap-4 border-t border-[#3f4b59] bg-[#161616] px-5 py-5 sm:px-8 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-200">
+                Ações da solicitação
+              </h3>
+              <p className="mt-1 text-sm text-slate-400">
+                Atualize o andamento conforme o atendimento avançar.
+              </p>
+            </div>
+
+            {hasAvailableActions ? (
+              <AppointmentActions
+                status={appointment.status}
+                appointmentId={appointment.id}
+                onUpdateStatus={async (id, status) => {
+                  await onUpdateStatus(id, status);
+                  await loadAppointment(false);
+                }}
+                className="flex flex-wrap items-center gap-2"
+              />
+            ) : (
+              <p className="text-sm text-slate-400">
+                Esta solicitação não possui ações disponíveis.
+              </p>
+            )}
+          </footer>
+        </article>
+      </Panel>
+    </div>
   );
 }

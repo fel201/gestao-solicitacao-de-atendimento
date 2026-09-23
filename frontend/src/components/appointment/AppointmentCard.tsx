@@ -1,10 +1,9 @@
 import type { Appointment, Status } from "../../interfaces/Appointment";
 import {
-  categoryBadgeClass,
-  categoryLabels,
   priorityBorderClasses,
 } from "../../constants/appointment";
 import AppointmentActions from "./AppointmentActions";
+import CategoryBadge from "./CategoryBadge";
 import PriorityBadge from "./PriorityBadge";
 import StatusBadge from "./StatusBadge";
 
@@ -36,11 +35,7 @@ export default function AppointmentCard({
           {appointment.nome_solicitante}
         </p>
         <div className="mt-2 flex flex-wrap gap-2 text-xs">
-          <span
-            className={`rounded-full bg-transparent border px-2 py-1 ${categoryBadgeClass}`}
-          >
-            {categoryLabels[appointment.categoria]}
-          </span>
+          <CategoryBadge category={appointment.categoria} />
           <PriorityBadge priority={appointment.prioridade} showLabel />
         </div>
       </div>
@@ -53,9 +48,24 @@ export default function AppointmentCard({
           <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
             <button
               type="button"
-              className="text-sm font-medium text-cyan-300 underline hover:text-cyan-200"
+              className="inline-flex items-center gap-2 rounded-md border border-cyan-400/50 bg-cyan-400/5 px-3 py-1.5 text-sm font-medium text-cyan-200 transition-colors hover:border-cyan-300 hover:bg-cyan-400/10 hover:text-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#151515]"
               onClick={() => onViewDetails(appointment)}
             >
+              <svg
+                aria-hidden="true"
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12Z"
+                />
+                <circle cx="12" cy="12" r="2.25" />
+              </svg>
               Ver detalhes
             </button>
 
