@@ -29,14 +29,8 @@ services:
       db:
         condition: service_healthy
     environment:
-      APP_ENV: local
-      APP_DEBUG: 'false'
-      DB_CONNECTION: pgsql
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+      APP_ENV: ${APP_ENV}
+      APP_DEBUG: ${APP_DEBUG}
     ports:
       - "8000:8000"
     command: sh -c "mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache && chmod -R 775 storage bootstrap/cache && composer dump-autoload --no-interaction && php artisan migrate --force && php artisan db:seed --force && exec php artisan serve --host=0.0.0.0 --port=8000"

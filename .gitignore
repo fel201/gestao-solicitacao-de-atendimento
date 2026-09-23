@@ -22,3 +22,6 @@ backend/.phpunit.result.cache
 .DS_Store
 Thumbs.db
 .vscode/
+
+# SQLite
+database.sqlite
