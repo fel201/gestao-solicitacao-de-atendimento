@@ -76,6 +76,8 @@ paths:
                 $ref: '#/components/schemas/AppointmentPage'
         '500':
           $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/DatabaseUnavailable'
     post:
       tags: [Solicitações]
       operationId: createAppointment
@@ -164,6 +166,8 @@ paths:
                   total: 5
         '500':
           $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/DatabaseUnavailable'
   /appointments/{id}:
     parameters:
       - $ref: '#/components/parameters/AppointmentId'
@@ -182,6 +186,8 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/DatabaseUnavailable'
   /appointments/{id}/status:
     parameters:
       - $ref: '#/components/parameters/AppointmentId'
@@ -241,6 +247,8 @@ paths:
                     message: Atendimento finalizado não pode ter status alterado.
         '500':
           $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/DatabaseUnavailable'
 components:
   parameters:
     AppointmentId:
@@ -273,7 +281,7 @@ components:
         $ref: '#/components/schemas/Priority'
   responses:
     DatabaseUnavailable:
-      description: O PostgreSQL não está disponível ou a consulta não pôde ser executada
+      description: Falha de consulta ou persistência no banco, sem exposição dos detalhes internos
       content:
         application/json:
           schema:
@@ -289,19 +297,37 @@ components:
             message: O serviço está temporariamente indisponível. Tente novamente em instantes.
             code: DATABASE_UNAVAILABLE
     NotFound:
-      description: Solicitação não encontrada. A mensagem do Laravel pode variar conforme idioma e debug.
+      description: Solicitação não encontrada
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/MessageError'
+            allOf:
+              - $ref: '#/components/schemas/MessageError'
+              - type: object
+                required: [code]
+                properties:
+                  code:
+                    type: string
+                    enum: [HTTP_ERROR]
+          example:
+            message: O recurso solicitado não foi encontrado.
+            code: HTTP_ERROR
     InternalError:
-      description: |
-        Falha interna ou de persistência. Com debug habilitado, podem existir
-        campos adicionais com detalhes da exceção. Não dependa desses campos.
+      description: Falha interna não relacionada ao banco, sem exposição dos detalhes da exceção
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/MessageError'
+            allOf:
+              - $ref: '#/components/schemas/MessageError'
+              - type: object
+                required: [code]
+                properties:
+                  code:
+                    type: string
+                    enum: [INTERNAL_SERVER_ERROR]
+          example:
+            message: Não foi possível concluir a operação. Tente novamente.
+            code: INTERNAL_SERVER_ERROR
   schemas:
     Status:
       type: string
